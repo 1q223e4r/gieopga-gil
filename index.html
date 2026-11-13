@@ -1,0 +1,1486 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>기업가의 길</title>
+<meta name="description" content="땅을 사고 통행료를 받는 경제 보드게임. 폰 한 대로 친구·컴퓨터와 2~4명이 함께 해요.">
+<meta name="theme-color" content="#0B1F38">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="기업가의 길">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://1q223e4r.github.io/gieopga-gil/">
+<meta property="og:title" content="기업가의 길">
+<meta property="og:description" content="땅을 사고 통행료를 받는 경제 보드게임. 폰 한 대로 친구·컴퓨터와 2~4명이 함께 해요.">
+<meta property="og:image" content="https://1q223e4r.github.io/gieopga-gil/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* 기본 리셋: 노치·홈 바 영역(safe area)만큼 위아래 여백 */
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* 레이아웃: 남색 '게임 테이블' 위에 실제 보드판 → 그 아래 플레이어 카드 → 맨 아래 큰 주사위 버튼 (한 화면 앱) */
+:root{
+  --table:#0B1F38; --table-2:#14305A; --on-table:#EAF0F7; --on-table-dim:#9FB2C8;
+  --navy:#14365D; --paper:#FFFFFF; --ink:#1B2836; --muted:#5E6B7A; --hair:#DCE3EB; --soft:#F1F4F8;
+  --gold:#FFC21A; --gold-deep:#C99400;
+  --food:#FF7A00; --food-bg:#FFEEDE; --mfg:#1F6BFF; --mfg-bg:#E2ECFF;
+  --tech:#8B3DFF; --tech-bg:#F0E6FF; --fin:#FFB300; --fin-bg:#FFF5DE;
+  --red:#EE3B2F; --green:#0FA25E; --teal:#0E8A80; --strat:#2D5E5A; --dash:#9FB0C2;
+  --pos:#1F7A4D; --neg:#C2372D; --tag:#B8862B;
+  --font:'Noto Sans KR','Noto Sans CJK KR','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',system-ui,sans-serif;
+  --deck-font:Arial,'Liberation Sans',Helvetica,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--table);color:var(--on-table);font-family:var(--font);-webkit-tap-highlight-color:transparent;overflow:hidden}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.app{height:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ── 상단 ── */
+.top{display:flex;align-items:center;gap:10px;padding-block:10px 8px;min-height:56px}
+.brand{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+.brand b{font-size:18px;font-weight:900;letter-spacing:-.03em;color:#fff;line-height:1}
+.bar4{display:flex;height:3px;width:100%;border-radius:2px;overflow:hidden}
+.bar4 i{flex:1}.bar4 i:nth-child(1){background:var(--food)}.bar4 i:nth-child(2){background:var(--mfg)}.bar4 i:nth-child(3){background:var(--tech)}.bar4 i:nth-child(4){background:var(--fin)}
+.chips{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+.chip{font-size:11.5px;font-weight:700;line-height:1;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.1);color:var(--on-table);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip.boom{background:#1D6B48;color:#E6FFF2}.chip.slump{background:#4B5D77;color:#EEF3FA}.chip.infl{background:#9A4A12;color:#FFF1E6}.chip.final{background:var(--gold);color:var(--navy)}
+.icon-btn{flex:0 0 auto;width:44px;height:44px;border-radius:12px;border:0;background:rgba(255,255,255,.08);color:#fff;display:grid;place-items:center;cursor:pointer}
+.icon-btn svg{width:22px;height:22px}
+
+/* ── 본문(보드 + 플레이어) ── */
+.stage{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:12px;padding-block:2px 10px;scrollbar-width:none}
+.stage::-webkit-scrollbar{display:none}
+.board-wrap{position:relative;container-type:inline-size;width:100%;flex:0 0 auto;margin:0 auto;
+  width:min(100%,max(280px,calc(100vh - var(--reserve,300px) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))));
+  width:min(100%,max(280px,calc(100dvh - var(--reserve,300px) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))))}
+.board{display:grid;grid-template-columns:1.55fr repeat(7,1fr) 1.55fr;grid-template-rows:1.55fr repeat(7,1fr) 1.55fr;
+  gap:1px;padding:1%;background:var(--navy);aspect-ratio:1/1;border-radius:6px;box-shadow:0 14px 34px rgba(0,0,0,.42);max-width:100%}
+.cell{position:relative;min-width:0;min-height:0;border:0;margin:0;padding:0;background:var(--paper);color:var(--navy);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;cursor:pointer;line-height:1.12;
+  -webkit-appearance:none;appearance:none}
+.cell:focus-visible{outline:2px solid var(--gold);outline-offset:-2px;z-index:2}
+.cell.prop{background:var(--gb);justify-content:flex-start}
+.cell .band{display:block;width:100%;flex:0 0 auto;height:10%;background:var(--gc)}
+.cell.h .band{height:14%}
+.cell .nm{font-weight:700;font-size:8px;font-size:clamp(6.5px,2.3cqw,13px);margin-top:1.1cqw;letter-spacing:-.03em;color:var(--navy)}
+.cell.h .nm{margin-top:1cqw;white-space:nowrap}
+.cell .pr{font-size:7px;font-size:clamp(6px,1.95cqw,11px);color:var(--muted);margin-top:.5cqw;font-variant-numeric:tabular-nums;font-weight:500}
+.cell.owned{box-shadow:inset 0 0 0 .65cqw var(--oc)}
+.cell .own{position:absolute;right:.65cqw;bottom:.65cqw;width:3.4cqw;height:3.4cqw;border-radius:50%;background:var(--oc);color:#fff;
+  font-size:2.1cqw;font-weight:900;display:grid;place-items:center;line-height:1}
+.cell .bon{position:absolute;left:.75cqw;bottom:.65cqw;font-size:1.75cqw;font-weight:900;color:var(--pos);line-height:1}
+.cell.strike::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 .9cqw,rgba(194,55,45,.28) .9cqw 1.5cqw);pointer-events:none}
+.cell .bdg{width:5.4cqw;height:5.4cqw;border-radius:50%;display:grid;place-items:center;color:#fff;flex:0 0 auto}
+.cell .bdg svg{width:58%;height:58%}
+.cell .bdg.n{background:var(--navy)}.cell .bdg.s{background:var(--teal)}
+.cell .lb{font-size:7px;font-size:clamp(6px,1.9cqw,11px);font-weight:700;margin-top:.8cqw;white-space:nowrap;letter-spacing:-.03em}
+.cell.news .lb{color:var(--navy)}.cell.strat .lb{color:var(--teal)}
+.cell.ev{color:#fff}.cell.ev .lb{color:#fff;margin-top:.5cqw}
+.cell.red{background:var(--red)}.cell.green{background:var(--green)}.cell.start{background:var(--navy)}
+.cell.ev .ic{width:4.2cqw;height:4.2cqw}.cell .ic svg{width:100%;height:100%;display:block}
+.cell .am{font-size:6.5px;font-size:clamp(5.5px,1.8cqw,10px);font-weight:700;margin-top:.3cqw;font-variant-numeric:tabular-nums}
+.cell.corner{color:#fff}
+.cell.corner .ic{width:6.4cqw;height:6.4cqw}
+.cell.start .ic{color:var(--gold)}
+.cell.corner .cn{font-size:11px;font-size:clamp(9px,3.3cqw,19px);font-weight:900;margin-top:.7cqw;letter-spacing:-.03em}
+.cell.corner .cs{font-size:7px;font-size:clamp(6px,1.95cqw,11px);font-weight:700;margin-top:.4cqw;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cell.flash{animation:flash .9s ease-out}
+@keyframes flash{0%{filter:brightness(1.35)}100%{filter:none}}
+
+.center{grid-column:2/9;grid-row:2/9;background:var(--paper);color:var(--navy);display:flex;flex-direction:column;align-items:center;
+  justify-content:space-between;padding:3.2cqw 3cqw 2.6cqw;min-width:0;min-height:0;overflow:hidden}
+.c-head{display:flex;flex-direction:column;align-items:center;gap:1.2cqw}
+.c-title{font-size:22px;font-size:6.6cqw;font-weight:900;letter-spacing:-.04em;line-height:1}
+.c-head .bar4{width:34cqw;height:.8cqw}
+.c-rule{font-size:2.2cqw;color:var(--muted);font-weight:500}
+.c-mid{display:flex;align-items:center;gap:4.2cqw}
+.mini-deck{position:relative;width:9.6cqw;height:13.4cqw;border-radius:1.3cqw;display:grid;place-items:center;color:#fff;
+  box-shadow:0 0 0 .3cqw #fff,0 0 0 .5cqw var(--dash),.8cqw .8cqw 0 -.05cqw var(--deck),.8cqw .8cqw 0 .25cqw #fff,.8cqw .8cqw 0 .45cqw var(--dash),1.6cqw 1.6cqw 0 -.05cqw var(--deck),1.6cqw 1.6cqw 0 .25cqw #fff,1.6cqw 1.6cqw 0 .45cqw var(--dash)}
+.mini-deck.n{--deck:var(--navy);background:var(--navy)}.mini-deck.s{--deck:var(--strat);background:var(--strat)}
+.mini-deck b{width:6.6cqw;height:6.6cqw;border-radius:50%;box-shadow:0 0 0 .3cqw rgba(255,255,255,.7);display:grid;place-items:center;
+  font-family:var(--deck-font);font-weight:700;font-size:3.9cqw;line-height:1}
+.mini-deck em{position:absolute;bottom:-4.6cqw;left:0;right:0;font-style:normal;font-size:1.9cqw;color:var(--muted);font-weight:700;white-space:nowrap;text-align:center}
+.dice{display:flex;gap:2.2cqw;background:none;border:0;padding:1.2cqw;border-radius:2.4cqw;cursor:default}
+.dice.ready{cursor:pointer;background:rgba(255,194,26,.18);box-shadow:0 0 0 .4cqw rgba(255,194,26,.6)}
+.die{width:10.6cqw;height:10.6cqw;border-radius:2.2cqw;background:#fff;box-shadow:inset 0 0 0 .38cqw var(--navy),0 .6cqw 0 var(--navy);
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:1.7cqw;gap:.25cqw}
+.die i{border-radius:50%;background:var(--navy);opacity:0;transform:scale(.75);transition:opacity .08s}
+.die[data-v="1"] i:nth-child(5),.die[data-v="2"] i:nth-child(1),.die[data-v="2"] i:nth-child(9),
+.die[data-v="3"] i:nth-child(1),.die[data-v="3"] i:nth-child(5),.die[data-v="3"] i:nth-child(9),
+.die[data-v="4"] i:nth-child(1),.die[data-v="4"] i:nth-child(3),.die[data-v="4"] i:nth-child(7),.die[data-v="4"] i:nth-child(9),
+.die[data-v="5"] i:nth-child(1),.die[data-v="5"] i:nth-child(3),.die[data-v="5"] i:nth-child(5),.die[data-v="5"] i:nth-child(7),.die[data-v="5"] i:nth-child(9),
+.die[data-v="6"] i:nth-child(1),.die[data-v="6"] i:nth-child(3),.die[data-v="6"] i:nth-child(4),.die[data-v="6"] i:nth-child(6),.die[data-v="6"] i:nth-child(7),.die[data-v="6"] i:nth-child(9){opacity:1}
+.die[data-v="1"] i:nth-child(5){background:var(--red);transform:scale(1)}
+.dice.rolling .die{animation:tumble .16s linear infinite}
+@keyframes tumble{0%{transform:rotate(-12deg) translateY(-1cqw)}50%{transform:rotate(10deg) translateY(.4cqw)}100%{transform:rotate(-12deg) translateY(-1cqw)}}
+.c-turn{display:flex;align-items:center;gap:1.4cqw;font-size:3.1cqw;font-weight:900;letter-spacing:-.02em;min-height:4cqw}
+.tdot{width:3.2cqw;height:3.2cqw;border-radius:50%;background:var(--pc);box-shadow:0 0 0 .4cqw #fff,0 0 0 .7cqw var(--pc)}
+.c-msg{font-size:9px;font-size:clamp(8px,2.55cqw,14px);color:var(--ink);text-align:center;line-height:1.38;min-height:2.8em;max-width:100%;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500}
+
+.pawns{position:absolute;inset:0;pointer-events:none}
+.pawn{position:absolute;left:0;top:0;width:4.3cqw;height:4.3cqw;margin:-2.15cqw 0 0 -2.15cqw;z-index:3;will-change:transform;
+  transition:transform .17s cubic-bezier(.3,.7,.4,1)}
+.pawn span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:var(--pc);color:#fff;font-weight:900;
+  font-size:2.35cqw;line-height:1;box-shadow:0 0 0 .5cqw #fff,0 .6cqw 1.2cqw rgba(0,0,0,.4)}
+.pawn.cur{z-index:4}
+.pawn.cur span{box-shadow:0 0 0 .5cqw #fff,0 0 0 1.15cqw rgba(255,194,26,.85),0 .6cqw 1.2cqw rgba(0,0,0,.4)}
+.pawn.hop span{animation:hop .17s ease-out}
+.pawn.gone{opacity:0}
+@keyframes hop{50%{transform:translateY(-1.8cqw) scale(1.1)}}
+
+.players{display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:8px;flex:0 0 auto}
+.players.c3 .pl{padding:8px 8px 8px 7px;column-gap:6px;grid-template-columns:22px minmax(0,1fr)}
+.players.c3 .pl .kind{display:none}.players.c3 .pl .dot{width:22px;height:22px}.players.c3 .pl .cash{grid-column:2/3;font-size:15px}
+.players.c3 .pl .meta{gap:0 6px}
+.pl{position:relative;background:var(--paper);color:var(--ink);border-radius:12px;padding:9px 10px 9px 9px;border:0;text-align:left;cursor:pointer;
+  display:grid;grid-template-columns:24px minmax(0,1fr) auto;column-gap:8px;row-gap:1px;align-items:center;min-width:0}
+.pl.active{box-shadow:0 0 0 3px var(--gold)}
+.pl.out{opacity:.55}
+.pl .dot{grid-row:1/3;width:24px;height:24px;border-radius:50%;background:var(--pc);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900}
+.pl .pn{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pl .kind{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap}
+.pl .cash{grid-column:2/4;font-size:16px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.pl .meta{grid-column:1/4;font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;flex-wrap:wrap;gap:2px 8px;font-variant-numeric:tabular-nums}
+.pl .meta svg{width:12px;height:12px;vertical-align:-2px;color:var(--teal)}
+.float{position:absolute;right:10px;top:8px;font-size:13px;font-weight:900;padding:2px 7px;border-radius:999px;pointer-events:none;
+  animation:float 1.4s ease-out forwards;font-variant-numeric:tabular-nums}
+.float.p{background:#DDF5E8;color:var(--pos)}.float.m{background:#FDE3E1;color:var(--neg)}
+@keyframes float{0%{transform:translateY(6px);opacity:0}15%{transform:none;opacity:1}75%{opacity:1}100%{transform:translateY(-12px);opacity:0}}
+
+/* ── 최근 기록 (남는 세로 공간을 채우고, 모자라면 잘림) ── */
+.feed{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:5px;padding:2px 4px 0}
+.feed h2{margin:0 0 2px;font-size:11.5px;font-weight:700;color:var(--on-table-dim);letter-spacing:.06em}
+.feed p{margin:0;font-size:13px;line-height:1.45;color:var(--on-table-dim)}
+.feed p:nth-of-type(1){color:var(--on-table)}
+/* ── 하단 버튼 ── */
+.actionbar{flex:0 0 auto;padding-block:8px 12px}
+.btn{min-height:48px;border-radius:12px;border:0;font-weight:700;font-size:16px;cursor:pointer;padding:0 16px;letter-spacing:-.01em}
+.btn.primary{background:var(--gold);color:var(--navy);box-shadow:0 4px 0 var(--gold-deep)}
+.btn.primary:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 var(--gold-deep)}
+.btn.primary:disabled{background:#2C4567;color:#A8B8CC;box-shadow:none;cursor:default}
+.btn.big{width:100%;min-height:56px;font-size:17px}
+.btn.ghost{background:var(--soft);color:var(--navy)}
+.btn.navy{background:var(--navy);color:#fff}
+.btn.danger{background:#FCE4E2;color:var(--neg)}
+
+/* ── 시트 / 카드 레이어 ── */
+.scrim{position:fixed;inset:0;background:rgba(4,14,28,.62);opacity:0;transition:opacity .2s;z-index:20}
+.scrim.open{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:560px;margin:0 auto;background:var(--paper);color:var(--ink);border-radius:18px 18px 0 0;
+  max-height:88%;overflow-y:auto;overscroll-behavior:contain;
+  padding:4px max(18px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));
+  transform:translateY(105%);transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+.sheet.open{transform:none}
+.grip{width:40px;height:4px;border-radius:2px;background:#C9D3DE;margin:8px auto 12px}
+.sh-title{font-size:20px;font-weight:900;color:var(--navy);margin:0 0 4px;letter-spacing:-.03em;text-wrap:balance}
+.sh-sub{font-size:13.5px;color:var(--muted);margin:0 0 14px;line-height:1.5}
+.sh-note{font-size:14px;color:var(--ink);margin:12px 0 0;line-height:1.5}
+.sh-actions{display:flex;gap:10px;margin-top:16px}
+.sh-actions .btn{flex:1}
+.sec{margin-top:18px}
+.sec h3{font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px;letter-spacing:.02em}
+.prow{display:grid;grid-template-columns:26px minmax(0,1fr) auto 40px;gap:8px;align-items:center;margin-bottom:8px}
+.prow .dot{width:26px;height:26px;border-radius:50%;background:var(--pc);color:#fff;display:grid;place-items:center;font-weight:900;font-size:13px}
+.prow input{width:100%;min-width:0;height:44px;border-radius:10px;border:1px solid var(--hair);background:#fff;color:var(--ink);padding:0 11px;font:inherit;font-size:15px}
+.x-btn{width:40px;height:40px;border-radius:10px;border:0;background:var(--soft);color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.x-btn svg{width:18px;height:18px}.x-btn:disabled{opacity:.35;cursor:default}
+.seg{display:inline-flex;background:var(--soft);border-radius:11px;padding:3px;gap:2px;max-width:100%;flex-wrap:wrap}
+.seg button{min-height:38px;border:0;background:transparent;border-radius:9px;padding:0 11px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(20,54,93,.18)}
+.seg.full{display:flex}.seg.full button{flex:1}
+.add-btn{width:100%;min-height:44px;border-radius:10px;border:1.5px dashed #B9C6D4;background:#fff;color:var(--navy);font-weight:700;font-size:14px;cursor:pointer}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:12px;background:var(--soft);border:0;width:100%;cursor:pointer;text-align:left}
+.switch span{font-size:14px;font-weight:700;color:var(--navy)}.switch small{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+.knob{flex:0 0 auto;width:46px;height:28px;border-radius:999px;background:#C5D0DC;position:relative;transition:background .15s}
+.knob::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s}
+.switch[aria-pressed="true"] .knob{background:var(--teal)}.switch[aria-pressed="true"] .knob::after{transform:translateX(18px)}
+
+.deed{border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px var(--hair)}
+.deed-h{background:var(--gc);color:var(--gi);padding:12px 14px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.deed-h b{font-size:21px;font-weight:900;letter-spacing:-.03em}.deed-h small{font-size:12.5px;font-weight:700;opacity:.92;white-space:nowrap}
+.deed-b{background:var(--gb);padding:4px 14px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(20,54,93,.1);font-size:14.5px}
+.kv:last-child{border-bottom:0}.kv span{color:var(--muted)}.kv b{color:var(--navy);font-variant-numeric:tabular-nums;text-align:right}
+.kv b.pos{color:var(--pos)}.kv b.neg{color:var(--neg)}
+
+.cardlayer{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;gap:12px;overflow-y:auto;
+  padding:calc(18px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:rgba(4,14,28,.7)}
+.cardlayer>*{flex:0 0 auto}.cardlayer::before,.cardlayer::after{content:"";flex:1 0 0}
+.who{font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px}
+.who i{width:12px;height:12px;border-radius:50%;background:var(--pc);box-shadow:0 0 0 2px #fff}
+.gcard{width:min(300px,82vw);background:#fff;border-radius:16px;overflow:hidden;color:var(--navy);
+  box-shadow:0 0 0 1.5px #A7B6C6,0 22px 44px rgba(0,0,0,.45);animation:flip .45s cubic-bezier(.2,.8,.2,1)}
+.gcard.small{width:100%;animation:none;box-shadow:0 0 0 1px var(--hair)}
+@keyframes flip{from{transform:perspective(900px) rotateY(75deg) scale(.92);opacity:0}}
+.gc-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:#fff;font-weight:700;font-size:15px}
+.gcard.n .gc-h{background:var(--navy)}.gcard.s .gc-h{background:var(--strat)}
+.gc-h span:last-child{font-weight:400;opacity:.85;font-variant-numeric:tabular-nums}
+.gc-b{padding:16px 16px 12px}
+.gc-t{display:flex;align-items:center;gap:10px;font-size:25px;font-weight:900;letter-spacing:-.03em;line-height:1.15}
+.gc-t svg{width:27px;height:27px;flex:0 0 auto}
+.gcard.n .gc-t svg{color:var(--navy)}.gcard.s .gc-t svg{color:var(--strat)}
+.gc-tag{color:var(--tag);font-size:12.5px;font-weight:700;margin-top:5px}
+.gc-x{display:inline-block;font-size:11px;font-weight:700;color:var(--muted);background:var(--soft);border-radius:6px;padding:2px 6px;margin-top:6px}
+.gc-p{font-size:15px;line-height:1.62;color:#22313F;margin:10px 0 12px}
+.gc-r{margin:0;border-top:1px solid var(--hair)}
+.gc-r div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--hair);font-size:14px}
+.gc-r div:last-child{border-bottom:0}
+.gc-r dt{color:var(--muted)}.gc-r dd{margin:0;font-weight:700;text-align:right}.gc-r dd.pos{color:var(--pos)}.gc-r dd.neg{color:var(--neg)}
+.gcard.small .gc-t{font-size:18px}.gcard.small .gc-t svg{width:20px;height:20px}.gcard.small .gc-p{font-size:13.5px;margin:6px 0 8px}
+.gcard.small .gc-h{padding:8px 12px;font-size:13px}.gcard.small .gc-b{padding:10px 12px 6px}.gcard.small .gc-r div{font-size:12.5px;padding:6px 0}
+.panel{width:min(340px,92vw);background:#fff;color:var(--ink);border-radius:14px;padding:12px}
+.panel p{margin:0;font-size:14px;line-height:1.5}
+.panel .pick-h{font-size:14px;font-weight:900;color:var(--navy);margin-bottom:8px}
+.opts{display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow-y:auto}
+.opt{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:46px;padding:0 12px;border-radius:10px;border:1px solid var(--hair);background:#fff;cursor:pointer;text-align:left}
+.opt i{width:10px;height:28px;border-radius:3px;background:var(--gc)}
+.opt span{font-weight:700;color:var(--navy);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opt small{font-size:12px;color:var(--muted);text-align:right;line-height:1.3;font-variant-numeric:tabular-nums}
+.panel .btn{width:100%;margin-top:10px}
+.skip-hint{font-size:12px;color:var(--on-table-dim)}
+
+.rank{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.rk{display:grid;grid-template-columns:28px 24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;border-radius:12px;background:var(--soft)}
+.rk.win{background:#FFF4D1;box-shadow:inset 0 0 0 2px var(--gold)}
+.rk .no{font-size:18px;font-weight:900;color:var(--navy);text-align:center}
+.rk .dot{width:24px;height:24px;border-radius:50%;background:var(--pc);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900}
+.rk .who2{min-width:0}.rk .who2 b{display:block;font-size:15px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk .who2 small{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rk .tot{font-size:17px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}
+.menu-list{display:flex;flex-direction:column;gap:8px}
+.menu-list .btn{display:flex;align-items:center;gap:12px;justify-content:flex-start;width:100%;min-height:52px}
+.menu-list svg{width:20px;height:20px}
+.rules h4{font-size:15px;color:var(--navy);margin:16px 0 6px}
+.rules p,.rules li{font-size:14px;line-height:1.62;color:var(--ink);margin:0}
+.rules ul{margin:0;padding-left:18px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.log li{font-size:13.5px;line-height:1.5;padding:7px 0;border-bottom:1px solid var(--hair);color:var(--ink)}
+.owned-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.empty{font-size:14px;color:var(--muted);padding:12px 0}
+
+@media (prefers-reduced-motion:reduce){
+  .pawn{transition:none}.pawn.hop span,.dice.rolling .die,.gcard,.cell.flash,.float{animation:none}
+  .sheet,.scrim{transition:none}
+}
+</style>
+</head>
+<body>
+<noscript><p style="padding:24px;color:#fff">이 게임은 자바스크립트를 켜야 할 수 있어요.</p></noscript>
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand"><b>기업가의 길</b><span class="bar4" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
+    <div class="chips" id="chips"></div>
+    <button class="icon-btn" id="btnMenu" type="button" aria-label="메뉴 열기"></button>
+  </header>
+  <main class="stage" id="stage">
+    <div class="board-wrap" id="boardWrap">
+      <div class="board" id="board"></div>
+      <div class="pawns" id="pawns"></div>
+    </div>
+    <section class="players" id="players" aria-label="플레이어"></section>
+    <section class="feed" id="feed" aria-label="최근 기록"></section>
+  </main>
+  <footer class="actionbar">
+    <button class="btn primary big" id="btnAct" type="button">게임 시작</button>
+  </footer>
+</div>
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-label="안내"></div>
+<div class="cardlayer" id="cardLayer" hidden role="dialog" aria-modal="true" aria-label="카드"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ════════════════════════ 규칙 상수 ════════════════════════ */
+const TOLL_RATE = 0.15;      // 통행료 = 땅값의 15%
+const START_PAY = 200;       // 출발을 지나거나 도착하면 매출 +200만
+const LAP_ROUNDS = 5;        // 카드의 '한 바퀴' = 5라운드 (주사위 평균 7칸 → 32칸 ≈ 4.6턴)
+const SELL_RATE = 0.5;       // 돈이 모자랄 때 은행에 파는 가격 = 땅값의 50%
+const STATE_V = 3;
+const SAVE_KEY = 'entre-road.save.v3', PREF_KEY = 'entre-road.prefs.v1';
+const PAWN_COLORS = ['#E5484D', '#1E9BF0', '#D6409F', '#2B2F36'];
+
+const GROUPS = {
+  food: { name: '식품·유통',  c: '#FF7A00', b: '#FFEEDE', i: '#FFFFFF' },
+  mfg:  { name: '제조업',     c: '#1F6BFF', b: '#E2ECFF', i: '#FFFFFF' },
+  tech: { name: 'IT·첨단',    c: '#8B3DFF', b: '#F0E6FF', i: '#FFFFFF' },
+  fin:  { name: '금융·에너지', c: '#FFB300', b: '#FFF5DE', i: '#14365D' },
+};
+const prop = (id, name, short, group, price) => ({ id, type: 'prop', name, short, group, price, toll: Math.round(price * TOLL_RATE) });
+// 실제 보드판 순서 (0=출발, 반시계 방향)
+const CELLS = [
+  { id: 0, type: 'start', name: '출발' },
+  prop(1, '동네빵집', '동네|빵집', 'food', 100),
+  { id: 2, type: 'news', name: '경제 뉴스' },
+  prop(3, '편의점', '편의점', 'food', 120),
+  { id: 4, type: 'news', name: '경제 뉴스' },
+  prop(5, '푸드마켓', '푸드|마켓', 'food', 140),
+  { id: 6, type: 'strat', name: '경영 전략' },
+  prop(7, '대형마트', '대형|마트', 'food', 160),
+  { id: 8, type: 'crisis', name: '경제위기', amount: -300 },
+  prop(9, '섬유공장', '섬유|공장', 'mfg', 180),
+  { id: 10, type: 'tax', name: '법인세', amount: -80 },
+  prop(11, '가구공장', '가구|공장', 'mfg', 200),
+  { id: 12, type: 'news', name: '경제 뉴스' },
+  prop(13, '자동차부품', '자동차|부품', 'mfg', 220),
+  { id: 14, type: 'strat', name: '경영 전략' },
+  prop(15, '조선소', '조선소', 'mfg', 240),
+  { id: 16, type: 'gov', name: '정부지원', amount: 150 },
+  prop(17, '게임회사', '게임|회사', 'tech', 260),
+  { id: 18, type: 'strat', name: '경영 전략' },
+  prop(19, '앱개발사', '앱|개발사', 'tech', 280),
+  { id: 20, type: 'tax', name: '금융위기', amount: -150 },
+  prop(21, '반도체', '반도체', 'tech', 300),
+  { id: 22, type: 'news', name: '경제 뉴스' },
+  prop(23, 'AI연구소', 'AI|연구소', 'tech', 320),
+  { id: 24, type: 'tax', name: '세금', amount: -150 },
+  prop(25, '태양광발전', '태양광|발전', 'fin', 340),
+  { id: 26, type: 'news', name: '경제 뉴스' },
+  prop(27, '증권사', '증권사', 'fin', 360),
+  { id: 28, type: 'gov', name: '창업지원', amount: 80 },
+  prop(29, '은행', '은행', 'fin', 380),
+  { id: 30, type: 'strat', name: '경영 전략' },
+  prop(31, '에너지그룹', '에너지|그룹', 'fin', 400),
+];
+const PROP_IDS = CELLS.filter(c => c.type === 'prop').map(c => c.id);
+
+/* 카드: N-01~N-04, S-01~S-05 = 실물 카드 / extra = 폰 버전 추가 카드 (설정에서 끌 수 있음)
+   N-05 '주가 폭락'은 투자 칸이 없어진 새 보드에서 쓸 곳이 없어 제외 */
+const CARDS = [
+  { id: 'N-01', deck: 'N', icon: 'percent', title: '금리 인상', fx: 'rateHike',
+    text: '기준금리가 올라 대출 이자 부담이 커졌다. 모든 플레이어는 현금의 5%를 이자로 낸다.',
+    rows: [['대상', '전원'], ['현금', '−5%', 'neg'], ['시점', '즉시']] },
+  { id: 'N-02', deck: 'N', icon: 'up', title: '경기 호황', fx: 'boom',
+    text: '소비가 크게 늘었다. 다음 한 바퀴 동안 모든 통행료가 2배가 된다.',
+    rows: [['대상', '전원'], ['통행료', '×2', 'pos'], ['기간', '한 바퀴 (5라운드)']] },
+  { id: 'N-03', deck: 'N', icon: 'swap', title: '환율 상승', fx: 'fx',
+    text: '원화 가치가 떨어졌다. 제조업은 수출이 늘고, 식품·유통은 수입 비용이 늘었다.',
+    rows: [['제조업', '+20만 / 기업', 'pos'], ['식품·유통', '−10만 / 기업', 'neg'], ['시점', '즉시']] },
+  { id: 'N-04', deck: 'N', icon: 'cart', title: '물가 상승', fx: 'inflation',
+    text: '원자재 가격이 올랐다. 다음 한 바퀴 동안 모든 기업 구입 가격이 20% 오른다.',
+    rows: [['대상', '전원'], ['구입 가격', '+20%', 'neg'], ['기간', '한 바퀴 (5라운드)']] },
+  { id: 'N-06', deck: 'N', extra: true, icon: 'chip', title: 'IT 붐', fx: 'itBoom',
+    text: 'AI와 게임 산업이 급성장했다. IT·첨단 기업 주인은 기업마다 20만을 번다.',
+    rows: [['IT·첨단', '+20만 / 기업', 'pos'], ['시점', '즉시']] },
+  { id: 'N-07', deck: 'N', extra: true, icon: 'bars', title: '증시 호황', fx: 'stockBoom',
+    text: '주식 시장에 돈이 몰렸다. 금융·에너지 기업 주인은 기업마다 20만을 번다.',
+    rows: [['금융·에너지', '+20만 / 기업', 'pos'], ['시점', '즉시']] },
+  { id: 'N-08', deck: 'N', extra: true, icon: 'down', title: '경기 침체', fx: 'slump',
+    text: '소비가 얼어붙었다. 다음 한 바퀴 동안 모든 통행료가 절반이 된다.',
+    rows: [['대상', '전원'], ['통행료', '×0.5', 'neg'], ['기간', '한 바퀴 (5라운드)']] },
+  { id: 'N-09', deck: 'N', extra: true, icon: 'house', title: '재산세 부과', fx: 'propTax',
+    text: '보유세가 올랐다. 모든 플레이어는 가진 기업 1개마다 10만을 낸다.',
+    rows: [['대상', '전원'], ['현금', '−10만 / 기업', 'neg'], ['시점', '즉시']] },
+  { id: 'N-10', deck: 'N', extra: true, icon: 'gift', title: '경기 부양책', fx: 'stimulus',
+    text: '정부가 지원금을 풀었다. 모든 플레이어가 50만을 받는다.',
+    rows: [['대상', '전원'], ['현금', '+50만', 'pos'], ['시점', '즉시']] },
+  { id: 'S-01', deck: 'S', icon: 'speaker', title: '마케팅 성공', fx: 'marketing', pick: 'own',
+    text: '광고 캠페인이 효과를 거뒀다. 내 기업 1개의 통행료를 영구히 올린다.',
+    rows: [['대상', '본인 기업 1개'], ['통행료', '+10만', 'pos'], ['기간', '영구']] },
+  { id: 'S-02', deck: 'S', icon: 'flask', title: '기술 개발', fx: 'rnd', pick: 'own',
+    text: '신기술 특허를 얻었다. 내 기업 1개의 가치가 게임 종료 때 더 높게 계산된다.',
+    rows: [['대상', '본인 기업 1개'], ['기업 가치', '+50만', 'pos'], ['시점', '게임 종료']] },
+  { id: 'S-03', deck: 'S', icon: 'users', title: '노사 갈등', fx: 'strike',
+    text: '임금 협상이 결렬됐다. 내 기업 1개는 다음 내 차례까지 통행료를 받지 못한다.',
+    rows: [['대상', '본인 기업 1개'], ['통행료', '0', 'neg'], ['기간', '1턴']] },
+  { id: 'S-04', deck: 'S', icon: 'shield', title: '보험 가입', fx: 'insurance', keep: true, tag: '보관했다가 필요할 때 사용',
+    text: '위험에 미리 대비했다. 경제위기 칸 피해를 한 번 막는다.',
+    rows: [['대상', '본인'], ['위기 피해', '0', 'pos'], ['사용', '1회']] },
+  { id: 'S-05', deck: 'S', icon: 'merge', title: '인수합병', fx: 'mna', pick: 'rival', optional: true,
+    text: '경쟁사를 사들인다. 다른 사람의 기업 1개를 원래 가격의 1.5배에 사 온다.',
+    rows: [['대상', '상대 기업 1개'], ['매입 가격', '×1.5', 'neg'], ['시점', '즉시']] },
+  { id: 'S-06', deck: 'S', extra: true, icon: 'coins', title: '투자 유치', fx: 'invest',
+    text: '벤처캐피털이 우리 회사에 투자했다. 현금 100만을 받는다.',
+    rows: [['대상', '본인'], ['현금', '+100만', 'pos'], ['시점', '즉시']] },
+  { id: 'S-07', deck: 'S', extra: true, icon: 'globe', title: '해외 진출', fx: 'overseas', pick: 'own',
+    text: '해외 시장에 진출했다. 내 기업 1개의 통행료를 영구히 크게 올린다.',
+    rows: [['대상', '본인 기업 1개'], ['통행료', '+20만', 'pos'], ['기간', '영구']] },
+  { id: 'S-08', deck: 'S', extra: true, icon: 'alert', title: '횡령 사고', fx: 'embezzle',
+    text: '회계 담당자가 회삿돈을 빼돌렸다. 현금 50만을 잃는다.',
+    rows: [['대상', '본인'], ['현금', '−50만', 'neg'], ['시점', '즉시']] },
+  { id: 'S-09', deck: 'S', extra: true, icon: 'spark', title: '신제품 히트', fx: 'hit',
+    text: '신제품이 대박 났다. 가진 기업 1개마다 20만을 받는다.',
+    rows: [['대상', '본인'], ['현금', '+20만 / 기업', 'pos'], ['시점', '즉시']] },
+  { id: 'S-10', deck: 'S', extra: true, icon: 'plus', title: '사업 확장', fx: 'expand', pick: 'free', optional: true,
+    text: '새 사업에 뛰어든다. 주인 없는 기업 1개를 골라 원래 가격에 바로 산다.',
+    rows: [['대상', '빈 기업 1개'], ['구입 가격', '원래 가격'], ['시점', '즉시']] },
+];
+const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]));
+
+const ICON = {
+  arrow: '<path d="M3 12h18"/><path d="M13.3 4.3 21 12l-7.7 7.7"/>',
+  bank: '<path d="M2 10.3 12 3.6l10 6.7"/><path d="M4.2 10.3v8.8M9.2 10.3v8.8M14.8 10.3v8.8M19.8 10.3v8.8"/><path d="M2 21.4h20"/>',
+  receipt: '<path d="M5.5 21.4V2.6h13v18.8l-3.3-2.1-3.2 2.1-3.3-2.1z"/><path d="M8.8 7.8h6.4M8.8 12h6.4"/>',
+  down: '<path d="m2 6.5 6.7 6.6 4.4-4.4L22 17.5"/><path d="M15.3 17.5H22v-6.6"/>',
+  up: '<path d="m2 17.5 6.7-6.6 4.4 4.4L22 6.5"/><path d="M15.3 6.5H22v6.6"/>',
+  brief: '<rect x="3.5" y="7.5" width="17" height="12.5" rx="2.2"/><path d="M3.5 13.2h17"/><path d="M9 7.5V5.2h6v2.3"/>',
+  news: '<path d="M4 4.5h11.5v15.5H5.8A1.8 1.8 0 0 1 4 18.2z"/><path d="M15.5 9H20v9.2a1.8 1.8 0 0 1-1.8 1.8h-2.7"/><path d="M7.5 8.6H12M7.5 12.4H12"/>',
+  percent: '<circle cx="7" cy="7" r="2.6"/><circle cx="17" cy="17" r="2.6"/><path d="M19 5 5 19"/>',
+  swap: '<path d="M4 8h15"/><path d="m15.5 4.5 3.5 3.5-3.5 3.5"/><path d="M20 16H5"/><path d="m8.5 12.5-3.5 3.5 3.5 3.5"/>',
+  cart: '<path d="M2.5 4h2.4l2.3 10.4a1.7 1.7 0 0 0 1.7 1.3h8.4a1.7 1.7 0 0 0 1.6-1.2L20.8 8H5.8"/><circle cx="9.5" cy="19.6" r="1.4"/><circle cx="17.2" cy="19.6" r="1.4"/>',
+  speaker: '<path d="M3.5 9.5v5h3.4l5.6 4.3V5.2L6.9 9.5z"/><path d="M16 9.2a4 4 0 0 1 0 5.6"/>',
+  flask: '<path d="M9 3h6"/><path d="M10 3v6.3L4.7 18.5A1.7 1.7 0 0 0 6.2 21h11.6a1.7 1.7 0 0 0 1.5-2.5L14 9.3V3"/><path d="M7.4 15h9.2"/>',
+  users: '<circle cx="9" cy="8.2" r="3.3"/><path d="M2.8 20.2a6.2 6.2 0 0 1 12.4 0"/><circle cx="17.3" cy="8.8" r="2.6"/><path d="M16.6 14.3a5 5 0 0 1 4.6 5.2"/>',
+  shield: '<path d="M12 2.8 4.5 5.8v5.7c0 4.6 3.2 8.4 7.5 9.7 4.3-1.3 7.5-5.1 7.5-9.7V5.8z"/><path d="m8.7 12 2.4 2.4 4.3-4.6"/>',
+  merge: '<path d="M5 3.5 12 10l7-6.5"/><path d="M12 10v10.5"/><path d="m8.4 17 3.6 3.5 3.6-3.5"/>',
+  chip: '<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9 2.5V6M15 2.5V6M9 18v3.5M15 18v3.5M2.5 9H6M2.5 15H6M18 9h3.5M18 15h3.5"/>',
+  bars: '<path d="M3.5 20.5h17"/><path d="M7 16.5v-4M12 16.5v-8M17 16.5v-12"/>',
+  house: '<path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5V15h4v5.5"/>',
+  gift: '<rect x="3.5" y="8" width="17" height="4.2" rx="1"/><path d="M5.2 12.2v8.3h13.6v-8.3"/><path d="M12 8v12.5"/><path d="M12 8C10.5 4.3 6.6 4 6.6 6.3S10 8 12 8zM12 8c1.5-3.7 5.4-4 5.4-1.7S14 8 12 8z"/>',
+  coins: '<circle cx="9" cy="9" r="5.5"/><path d="M15.3 9.8a5.5 5.5 0 1 1-5.5 5.5"/><path d="M9 6.8v4.4M6.8 9h4.4"/>',
+  globe: '<circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2"/><path d="M12 3.4c2.5 2.4 3.8 5.3 3.8 8.6s-1.3 6.2-3.8 8.6c-2.5-2.4-3.8-5.3-3.8-8.6S9.5 5.8 12 3.4z"/>',
+  alert: '<path d="M12 3.6 2.6 19.8h18.8z"/><path d="M12 9.8v4.6"/><path d="M12 17.2v.3"/>',
+  spark: '<path d="m11 3.5 1.9 5.2 5.2 1.9-5.2 1.9L11 17.7l-1.9-5.2-5.2-1.9 5.2-1.9z"/><path d="m18.6 15.2.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/>',
+  plus: '<rect x="3.8" y="3.8" width="16.4" height="16.4" rx="2.6"/><path d="M12 8.2v7.6M8.2 12h7.6"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  book: '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/>',
+  sound: '<path d="M3.5 9.5v5h3.4l5.6 4.3V5.2L6.9 9.5z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11"/>',
+  mute: '<path d="M3.5 9.5v5h3.4l5.6 4.3V5.2L6.9 9.5z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>',
+  list: '<path d="M8.5 6.5h12M8.5 12h12M8.5 17.5h12"/><path d="M3.8 6.5h.4M3.8 12h.4M3.8 17.5h.4"/>',
+  bolt: '<path d="M13 2.8 4.8 13.6H12l-1 7.6 8.2-10.8H12z"/>',
+  restart: '<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v4.5H8"/>',
+};
+const svg = (name, extra = '') =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICON[name] || ''}</svg>`;
+
+/* ════════════════════════ 유틸 ════════════════════════ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+// 만 단위 금액 표시: 1,250만 / 1억 2,500만 / −80만
+function fmt(n) {
+  const neg = n < 0; n = Math.abs(Math.round(n));
+  let s;
+  if (n >= 10000) { const e = Math.floor(n / 10000), r = n % 10000; s = `${e}억` + (r ? ` ${r.toLocaleString('ko-KR')}만` : ''); }
+  else s = `${n.toLocaleString('ko-KR')}만`;
+  return (neg ? '−' : '') + s;
+}
+// 받침에 맞는 조사 (이/가, 을/를, 은/는, 과/와)
+function hasJong(word) {
+  const ch = String(word).trim().slice(-1); const code = ch.charCodeAt(0);
+  if (code >= 0xAC00 && code <= 0xD7A3) return (code - 0xAC00) % 28 !== 0;
+  if (/[0-9]/.test(ch)) return '013678'.includes(ch);
+  if (/[A-Za-z]/.test(ch)) return 'lmnrLMNR'.includes(ch);
+  return false;
+}
+function j(word, pair) {
+  const [a, b] = pair.split('/');
+  if (word === '나' && pair === '이/가') return '내가';
+  return word + (hasJong(word) ? a : b);
+}
+const maxBy = (arr, f) => arr.reduce((best, x) => (best == null || f(x) > f(best) ? x : best), null);
+
+/* 시드 난수(mulberry32) — 상태에 저장돼서 새로고침해도 같은 주사위가 나옴 */
+function rnd(s) {
+  let t = (s.rng = (s.rng + 0x6D2B79F5) >>> 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const rint = (s, n) => Math.floor(rnd(s) * n);
+function shuffle(arr, s) { for (let i = arr.length - 1; i > 0; i--) { const k = rint(s, i + 1); [arr[i], arr[k]] = [arr[k], arr[i]]; } return arr; }
+
+/* 취소 가능한 대기: 새 게임을 시작하면 이전 게임 루프의 대기를 모두 끊어 낡은 상태를 건드리지 못하게 함 */
+const ABORT = Symbol('abort');
+const pending = new Set();
+function track(fn) {
+  return new Promise((resolve, reject) => {
+    const h = { reject };
+    pending.add(h);
+    fn(v => { if (pending.delete(h)) resolve(v); });
+  });
+}
+function abortAll() { const hs = [...pending]; pending.clear(); hs.forEach(h => h.reject(ABORT)); }
+const sleep = ms => (ms <= 0 ? Promise.resolve() : track(res => setTimeout(res, ms)));
+
+/* ════════════════════════ 전역 ════════════════════════ */
+const G = { gen: 0, sheetTok: 0, headless: false, fast: false, rollResolve: null, sheetResolve: null, lastSave: null, audit: [] };
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+let S = null;              // 게임 상태 (JSON 저장 가능)
+let prefs = loadPrefs();
+
+const BASE_T = { ai: 650, dice: 560, step: 175, land: 520, card: 2100, aiDecide: 700, pay: 380 };
+function T(k) {
+  if (G.headless) return 0;
+  let t = BASE_T[k] * (G.fast ? 0.45 : 1);
+  if (RM && k === 'step') t = 60;
+  return Math.round(t);
+}
+
+/* ════════════════════════ 상태 ════════════════════════ */
+function newState(setup, seed) {
+  const s = {
+    v: STATE_V, seed: seed >>> 0, rng: seed >>> 0,
+    settings: { startCash: setup.startCash, laps: setup.laps, extra: !!setup.extra },
+    players: setup.players.map((p, i) => ({
+      id: i, name: String(p.name || `플레이어 ${i + 1}`).slice(0, 10), ai: !!p.ai, color: PAWN_COLORS[i],
+      cash: setup.startCash, pos: 0, laps: 0, out: false, ins: 0, outAt: 0 })),
+    props: {}, turn: 0, round: 1, econ: null, infl: null, finalRound: false,
+    decks: { N: [], S: [] }, used: { N: [], S: [] },
+    dice: [5, 2], log: [], phase: 'play', bank: { paid: 0, recv: 0 }, turns: 0,
+  };
+  for (const id of PROP_IDS) s.props[id] = { owner: -1, bonus: 0, tech: 0, strike: false };
+  for (const d of ['N', 'S']) s.decks[d] = shuffle(CARDS.filter(c => c.deck === d && (s.settings.extra || !c.extra)).map(c => c.id), s);
+  return s;
+}
+function validState(s) {
+  return !!s && s.v === STATE_V && Array.isArray(s.players) && s.players.length >= 2 && s.players.length <= 4 &&
+    s.props && typeof s.turn === 'number' && s.decks && s.settings && PROP_IDS.every(id => s.props[id]);
+}
+const active = () => S.players.filter(p => !p.out);
+const ownedBy = p => PROP_IDS.filter(id => S.props[id].owner === p.id);
+const countGroup = (p, g) => ownedBy(p).filter(id => CELLS[id].group === g).length;
+const compValue = p => ownedBy(p).reduce((a, id) => a + CELLS[id].price, 0);
+const techValue = p => ownedBy(p).reduce((a, id) => a + S.props[id].tech, 0);
+const assetsOf = p => p.cash + compValue(p) + techValue(p);
+const leaderLaps = () => Math.max(...S.players.map(p => p.laps));
+function buyPrice(id) { const base = CELLS[id].price; return S.infl ? Math.round(base * 1.2) : base; }
+function tollOf(id) {
+  const c = CELLS[id], pr = S.props[id];
+  if (pr.strike) return 0;
+  let t = c.toll + pr.bonus;
+  if (S.econ && S.econ.kind === 'boom') t *= 2;
+  else if (S.econ && S.econ.kind === 'slump') t = Math.round(t / 2);
+  return t;
+}
+function log(text) { if (!S) return; S.log.push(text); if (S.log.length > 80) S.log.shift(); }
+
+/* ════════════════════════ 돈 이동 ════════════════════════ */
+function earn(p, amt) {
+  amt = Math.round(amt); if (amt <= 0 || p.out) return;
+  p.cash += amt; S.bank.paid += amt; io.money(p, amt);
+}
+// 지불: 현금이 모자라면 싼 기업부터 은행에 반값에 팔고, 그래도 모자라면 파산
+async function pay(p, amt, to, why) {
+  amt = Math.max(0, Math.round(amt));
+  if (amt === 0 || p.out) return true;
+  if (p.cash < amt) {
+    const mine = ownedBy(p).sort((a, b) => CELLS[a].price - CELLS[b].price);
+    for (const id of mine) {
+      if (p.cash >= amt) break;
+      const got = Math.round(CELLS[id].price * SELL_RATE);
+      p.cash += got; S.bank.paid += got;
+      S.props[id] = { owner: -1, bonus: 0, tech: 0, strike: false };
+      const m = `${j(p.name, '이/가')} 돈이 모자라 ${j(CELLS[id].name, '을/를')} 은행에 ${fmt(got)}에 팔았어요`;
+      log(m); io.notify(m); io.refresh();
+      await sleep(T('pay'));
+    }
+  }
+  if (p.cash >= amt) {
+    p.cash -= amt;
+    if (to) to.cash += amt; else S.bank.recv += amt;
+    io.money(p, -amt); if (to) io.money(to, amt);
+    return true;
+  }
+  // 파산: 남은 현금은 받을 사람(없으면 은행)에게
+  const left = p.cash; p.cash = 0;
+  if (to) { to.cash += left; if (left) io.money(to, left); } else S.bank.recv += left;
+  p.out = true; p.outAt = S.turns;
+  const m = `${j(p.name, '이/가')} ${j(why, '을/를')} 낼 돈이 없어 파산했어요`;
+  log(m); io.notify(m, 'bad'); io.refresh();
+  if (active().length <= 1) S.phase = 'over';
+  return false;
+}
+
+/* ════════════════════════ 진행 ════════════════════════ */
+async function gameLoop() {
+  const s = S;
+  while (s === S && s.phase === 'play') {
+    const p = s.players[s.turn];
+    if (!p.out) await takeTurn(p);
+    if (s !== S) return;
+    if (G.headless) audit();
+    if (s.phase !== 'play') break;
+    nextTurn();
+  }
+  if (s === S && s.phase === 'over') {
+    save(); io.refresh();
+    if (!G.headless) { Snd.win(); await sleep(500); }
+    await io.results();
+  }
+}
+async function takeTurn(p) {
+  S.turns++;
+  // 내 기업의 파업(노사 갈등)은 내 차례가 오면 끝남
+  for (const id of PROP_IDS) { const pr = S.props[id]; if (pr.owner === p.id && pr.strike) pr.strike = false; }
+  save();
+  io.turnStart(p);
+  if (p.ai) await sleep(T('ai')); else await io.waitRoll(p);
+  const q = G.rollQueue && G.rollQueue.length ? G.rollQueue.shift() : null;   // 테스트 전용
+  const d1 = q ? q[0] : 1 + rint(S, 6), d2 = q ? q[1] : 1 + rint(S, 6);
+  S.dice = [d1, d2];
+  await io.dice(d1, d2);
+  log(`${p.name}: 주사위 ${d1}+${d2}=${d1 + d2}`);
+  await move(p, d1 + d2);
+  await land(p);
+  io.refresh();
+}
+async function move(p, n) {
+  for (let k = 0; k < n; k++) {
+    p.pos = (p.pos + 1) % CELLS.length;
+    await io.step(p);
+    if (p.pos === 0) {   // 출발을 지나거나 도착: 매출 + 바퀴 수
+      p.laps++;
+      earn(p, START_PAY);
+      const m = `${j(p.name, '이/가')} 출발을 지나 매출 +${START_PAY}만 (${p.laps}바퀴)`;
+      log(m); io.notify(m, 'good');
+      if (p.laps >= S.settings.laps && !S.finalRound) {
+        S.finalRound = true;
+        const fm = `${j(p.name, '이/가')} 목표 ${S.settings.laps}바퀴를 채웠어요. 이번 라운드가 마지막이에요`;
+        log(fm); io.notify(fm, 'good');
+      }
+      io.refresh();
+    }
+  }
+}
+async function land(p) {
+  const c = CELLS[p.pos];
+  io.flash(c.id);
+  if (c.type === 'prop') await landProp(p, c);
+  else if (c.type === 'news') await cardTurn(p, 'N');
+  else if (c.type === 'strat') await cardTurn(p, 'S');
+  else if (c.type === 'tax') {
+    const m = `${j(p.name, '이/가')} ${c.name} ${fmt(-c.amount)}을 냈어요`;
+    await pay(p, -c.amount, null, c.name); if (!p.out) { log(m); io.notify(m, 'bad'); }
+  } else if (c.type === 'crisis') {
+    if (p.ins > 0) {   // 보험 가입(S-04) 자동 사용
+      p.ins--; S.used.S.push('S-04');
+      const m = `${j(p.name, '이/가')} 보험으로 경제위기 피해를 막았어요`; log(m); io.notify(m, 'good');
+    } else {
+      const m = `${j(p.name, '이/가')} 경제위기로 ${fmt(-c.amount)}을 잃었어요`;
+      await pay(p, -c.amount, null, '경제위기'); if (!p.out) { log(m); io.notify(m, 'bad'); }
+    }
+  } else if (c.type === 'gov') {
+    earn(p, c.amount); const m = `${j(p.name, '이/가')} ${c.name} +${c.amount}만을 받았어요`; log(m); io.notify(m, 'good');
+  } else if (c.type === 'start') {
+    io.notify(`${j(p.name, '이/가')} 출발 칸에 도착했어요`);
+  }
+  io.refresh();
+  await sleep(T('land'));
+}
+async function landProp(p, c) {
+  const pr = S.props[c.id];
+  if (pr.owner === -1) {
+    const price = buyPrice(c.id);
+    let yes;
+    if (p.ai) {
+      yes = p.cash >= price && AI.buy(p, c, price);
+      if (!yes && p.cash < price) io.notify(`${j(p.name, '은/는')} 돈이 모자라 ${j(c.name, '을/를')} 못 샀어요`);
+    } else yes = await io.askBuy(p, c, price);
+    if (yes && p.cash >= price) {
+      p.cash -= price; S.bank.recv += price; pr.owner = p.id;
+      io.money(p, -price); Snd.coin();
+      const m = `${j(p.name, '이/가')} ${j(c.name, '을/를')} ${fmt(price)}에 샀어요`; log(m); io.notify(m, 'good');
+      io.refresh();
+      if (p.ai) await sleep(T('aiDecide'));
+    } else if (p.ai && p.cash >= price) {
+      io.notify(`${j(p.name, '은/는')} ${j(c.name, '을/를')} 사지 않았어요`);
+    }
+  } else if (pr.owner === p.id) {
+    io.notify(`${j(p.name, '이/가')} 자기 회사 ${c.name}에 들렀어요`);
+  } else {
+    const o = S.players[pr.owner];
+    const t = tollOf(c.id);
+    if (t === 0) { const m = `${j(c.name, '은/는')} 파업 중이라 통행료가 없어요`; log(m); io.notify(m); return; }
+    Snd.pay();
+    const ok = await pay(p, t, o, `${c.name} 통행료`);
+    if (ok) { const m = `${j(p.name, '이/가')} ${o.name}에게 ${c.name} 통행료 ${fmt(t)}을 냈어요`; log(m); io.notify(m, 'bad'); }
+  }
+}
+function draw(deck) {
+  if (!S.decks[deck].length) { S.decks[deck] = shuffle(S.used[deck].splice(0), S); }
+  return S.decks[deck].pop() || null;
+}
+// 카드별 선택지 (pick: own=내 기업, rival=남의 기업, free=빈 기업)
+function cardContext(p, card) {
+  const ctx = { options: [], forced: null, note: '' };
+  if (card.pick === 'own') {
+    ctx.options = ownedBy(p);
+    if (!ctx.options.length) ctx.note = '가진 기업이 없어서 이번엔 효과가 없어요.';
+  } else if (card.pick === 'rival') {
+    const all = PROP_IDS.filter(id => S.props[id].owner >= 0 && S.props[id].owner !== p.id);
+    ctx.options = all.filter(id => Math.round(CELLS[id].price * 1.5) <= p.cash);
+    if (!all.length) ctx.note = '다른 사람 기업이 아직 없어서 효과가 없어요.';
+    else if (!ctx.options.length) ctx.note = '1.5배 가격을 낼 현금이 모자라서 살 수 있는 기업이 없어요.';
+  } else if (card.pick === 'free') {
+    const all = PROP_IDS.filter(id => S.props[id].owner === -1);
+    ctx.options = all.filter(id => CELLS[id].price <= p.cash);
+    if (!all.length) ctx.note = '주인 없는 기업이 없어서 효과가 없어요.';
+    else if (!ctx.options.length) ctx.note = '현금이 모자라서 살 수 있는 빈 기업이 없어요.';
+  } else if (card.fx === 'strike') {
+    const mine = ownedBy(p);
+    if (mine.length) ctx.forced = mine[rint(S, mine.length)];
+    else ctx.note = '가진 기업이 없어서 이번엔 피해가 없어요.';
+  }
+  return ctx;
+}
+async function cardTurn(p, deck) {
+  let id = null;
+  if (G.force && G.force[deck] && !p.ai) { id = G.force[deck]; G.force[deck] = null; }   // 테스트 전용
+  if (!id) id = draw(deck);
+  if (!id) { io.notify('남은 카드가 없어요'); return; }
+  const card = CARD[id];
+  Snd.card();
+  const ctx = cardContext(p, card);
+  let choice = ctx.forced;
+  if (card.pick && ctx.options.length) {
+    if (p.ai) choice = AI.pick(p, card, ctx.options);
+    else choice = await io.showCard(p, card, ctx);
+  }
+  if (p.ai || !(card.pick && ctx.options.length)) await io.showCard(p, card, ctx, choice, true);
+  log(`${p.name}: [${card.id}] ${card.title}`);
+  await applyCard(p, card, choice);
+  if (!card.keep) S.used[deck].push(id);
+  io.refresh();
+}
+async function applyCard(p, card, choice) {
+  const act = active();
+  const say = (m, tone) => { log(m); io.notify(m, tone); };
+  switch (card.fx) {
+    case 'rateHike':
+      for (const q of act) { const a = Math.round(q.cash * 0.05); if (a > 0) await pay(q, a, null, '금리 인상 이자'); }
+      say('금리 인상: 모두 현금의 5%를 이자로 냈어요', 'bad'); break;
+    case 'boom': S.econ = { kind: 'boom', left: LAP_ROUNDS }; say(`경기 호황: ${LAP_ROUNDS}라운드 동안 통행료 2배`, 'good'); break;
+    case 'slump': S.econ = { kind: 'slump', left: LAP_ROUNDS }; say(`경기 침체: ${LAP_ROUNDS}라운드 동안 통행료 절반`, 'bad'); break;
+    case 'inflation': S.infl = { left: LAP_ROUNDS }; say(`물가 상승: ${LAP_ROUNDS}라운드 동안 기업 구입 가격 +20%`, 'bad'); break;
+    case 'fx':
+      for (const q of act) {
+        const m = countGroup(q, 'mfg'), f = countGroup(q, 'food');
+        if (m) earn(q, 20 * m);
+        if (f) await pay(q, 10 * f, null, '환율 상승 수입 비용');
+      }
+      say('환율 상승: 제조업은 기업마다 +20만, 식품·유통은 −10만'); break;
+    case 'itBoom': for (const q of act) { const n = countGroup(q, 'tech'); if (n) earn(q, 20 * n); } say('IT 붐: IT·첨단 기업마다 +20만', 'good'); break;
+    case 'stockBoom': for (const q of act) { const n = countGroup(q, 'fin'); if (n) earn(q, 20 * n); } say('증시 호황: 금융·에너지 기업마다 +20만', 'good'); break;
+    case 'propTax':
+      for (const q of act) { const n = ownedBy(q).length; if (n) await pay(q, 10 * n, null, '재산세'); }
+      say('재산세: 기업 1개마다 10만씩 냈어요', 'bad'); break;
+    case 'stimulus': for (const q of act) earn(q, 50); say('경기 부양책: 모두 50만을 받았어요', 'good'); break;
+    case 'marketing': case 'overseas':
+      if (choice != null) { const add = card.fx === 'marketing' ? 10 : 20; S.props[choice].bonus += add; say(`${CELLS[choice].name} 통행료가 영구히 +${add}만 올랐어요`, 'good'); }
+      break;
+    case 'rnd': if (choice != null) { S.props[choice].tech += 50; say(`${CELLS[choice].name} 기업 가치가 게임 끝에 +50만으로 계산돼요`, 'good'); } break;
+    case 'strike': if (choice != null) { S.props[choice].strike = true; say(`${CELLS[choice].name} 파업: ${p.name}의 다음 차례까지 통행료 0`, 'bad'); } break;
+    case 'insurance': p.ins++; say(`${j(p.name, '이/가')} 보험에 가입했어요 (경제위기 1회 방어)`, 'good'); break;
+    case 'mna':
+      if (choice != null) {
+        const c = CELLS[choice], pr = S.props[choice], o = S.players[pr.owner];
+        const cost = Math.round(c.price * 1.5);
+        if (o && p.cash >= cost) {
+          p.cash -= cost; o.cash += cost; pr.owner = p.id; pr.strike = false;
+          io.money(p, -cost); io.money(o, cost);
+          say(`${j(p.name, '이/가')} ${o.name}의 ${j(c.name, '을/를')} ${fmt(cost)}에 인수했어요`, 'good');
+        }
+      } else say(`${j(p.name, '은/는')} 인수합병을 하지 않았어요`);
+      break;
+    case 'invest': earn(p, 100); say(`${j(p.name, '이/가')} 투자 유치로 100만을 받았어요`, 'good'); break;
+    case 'embezzle': if (await pay(p, 50, null, '횡령 손실')) say(`${j(p.name, '이/가')} 횡령 사고로 50만을 잃었어요`, 'bad'); break;
+    case 'hit': { const n = ownedBy(p).length; if (n) { earn(p, 20 * n); say(`신제품 히트: ${j(p.name, '이/가')} ${20 * n}만을 받았어요`, 'good'); } else say('가진 기업이 없어 효과가 없어요'); break; }
+    case 'expand':
+      if (choice != null) {
+        const c = CELLS[choice];
+        if (S.props[choice].owner === -1 && p.cash >= c.price) {
+          p.cash -= c.price; S.bank.recv += c.price; S.props[choice].owner = p.id; io.money(p, -c.price);
+          say(`${j(p.name, '이/가')} 사업 확장으로 ${j(c.name, '을/를')} ${fmt(c.price)}에 샀어요`, 'good');
+        }
+      } else say(`${j(p.name, '은/는')} 사업 확장을 하지 않았어요`);
+      break;
+  }
+  io.refresh();
+}
+function nextTurn() {
+  const n = S.players.length;
+  let t = S.turn;
+  for (let k = 0; k < n; k++) {
+    t = (t + 1) % n;
+    if (t === 0) { endRound(); if (S.phase !== 'play') return; }
+    if (!S.players[t].out) break;
+  }
+  S.turn = t;
+}
+function endRound() {
+  if (S.econ && --S.econ.left <= 0) { S.econ = null; const m = '경기가 보통으로 돌아왔어요'; log(m); io.notify(m); }
+  if (S.infl && --S.infl.left <= 0) { S.infl = null; const m = '물가가 안정됐어요'; log(m); io.notify(m); }
+  if (leaderLaps() >= S.settings.laps) { S.phase = 'over'; return; }
+  S.round++;
+  if (S.round > 600) { S.phase = 'over'; G.audit.push('round limit'); }   // 무한 진행 방지
+}
+
+/* ════════════════════════ 컴퓨터 ════════════════════════ */
+const AI = {
+  buy(p, c, price) {
+    const lapsLeft = S.settings.laps - leaderLaps();
+    let reserve = 150;                         // 세금·통행료 대비 여유 현금
+    if (S.infl) reserve += lapsLeft >= 2 ? 200 : 9999;   // 비싸게 사는 건 초반에만
+    return p.cash - price >= reserve;
+  },
+  pick(p, card, options) {
+    if (card.pick === 'own') return maxBy(options, id => CELLS[id].price);
+    if (card.pick === 'free') { const ok = options.filter(id => p.cash - CELLS[id].price >= 150); return ok.length ? maxBy(ok, id => CELLS[id].price) : null; }
+    if (card.pick === 'rival') {   // 1.5배는 자산이 줄어드는 거래 → 돈이 넉넉하고 게임이 많이 남았을 때만
+      const lapsLeft = S.settings.laps - leaderLaps();
+      if (lapsLeft < 3) return null;
+      const ok = options.filter(id => p.cash - Math.round(CELLS[id].price * 1.5) >= 500);
+      return ok.length ? maxBy(ok, id => CELLS[id].toll) : null;
+    }
+    return null;
+  },
+};
+
+/* ════════════════════════ 결과 ════════════════════════ */
+function ranking() {
+  return S.players.map(p => ({ p, cash: p.cash, comp: compValue(p), tech: techValue(p), total: assetsOf(p) }))
+    .sort((a, b) => (a.p.out - b.p.out) || (b.total - a.total) || (b.cash - a.cash) || (b.p.outAt - a.p.outAt));
+}
+
+/* ════════════════════════ 점검(자동 테스트용) ════════════════════════ */
+function audit() {
+  const start = S.players.length * S.settings.startCash;
+  const sum = S.players.reduce((a, p) => a + p.cash, 0);
+  if (sum !== start + S.bank.paid - S.bank.recv) G.audit.push(`money mismatch t${S.turns}: ${sum} vs ${start + S.bank.paid - S.bank.recv}`);
+  for (const p of S.players) {
+    if (p.cash < 0) G.audit.push(`negative cash ${p.name} ${p.cash}`);
+    if (p.out && ownedBy(p).length) G.audit.push(`bankrupt owns ${p.name}`);
+    if (p.pos < 0 || p.pos > 31) G.audit.push('bad pos');
+  }
+  for (const id of PROP_IDS) { const o = S.props[id].owner; if (o < -1 || o >= S.players.length) G.audit.push('bad owner'); }
+}
+
+/* ════════════════════════ 소리 ════════════════════════ */
+const Snd = {
+  ctx: null,
+  get on() { return prefs.sound !== false; },
+  init() {
+    if (!this.on) return;
+    try { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {}); }
+    catch { this.ctx = null; }
+  },
+  tone(f, d, type = 'sine', v = 0.05, w = 0) {
+    if (!this.on || !this.ctx || G.headless) return;
+    try {
+      const t = this.ctx.currentTime + w, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g).connect(this.ctx.destination); o.start(t); o.stop(t + d + 0.03);
+    } catch { /* 소리는 실패해도 게임 진행엔 영향 없음 */ }
+  },
+  step() { this.tone(620, 0.045, 'triangle', 0.025); },
+  dice() { for (let i = 0; i < 6; i++) this.tone(170 + Math.random() * 260, 0.035, 'square', 0.018, i * 0.07); },
+  coin() { this.tone(988, 0.08, 'triangle', 0.05); this.tone(1319, 0.16, 'triangle', 0.05, 0.07); },
+  pay() { this.tone(392, 0.1, 'sawtooth', 0.022); this.tone(294, 0.16, 'sawtooth', 0.022, 0.09); },
+  card() { this.tone(523, 0.07, 'sine', 0.04); this.tone(784, 0.13, 'sine', 0.04, 0.06); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.2, 'triangle', 0.05, i * 0.12)); },
+};
+
+/* ════════════════════════ 저장 ════════════════════════ */
+function save() {
+  if (G.headless || !S || S.preview) return;
+  G.lastSave = JSON.stringify(S);
+  try { localStorage.setItem(SAVE_KEY, G.lastSave); } catch { /* 저장 불가(사생활 보호 모드 등) → 이어하기만 안 됨 */ }
+}
+function loadSave() {
+  try { const t = localStorage.getItem(SAVE_KEY); if (!t) return null; const s = JSON.parse(t); return validState(s) ? s : null; }
+  catch { return null; }
+}
+function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch {} }
+function loadPrefs() {
+  const def = { sound: true, fast: false, startCash: 1000, laps: 4, extra: true,
+    players: [{ name: '나', ai: false }, { name: '컴퓨터 1', ai: true }, { name: '컴퓨터 2', ai: true }] };
+  try {
+    const p = JSON.parse(localStorage.getItem(PREF_KEY) || 'null');
+    if (p && Array.isArray(p.players) && p.players.length >= 2 && p.players.length <= 4) return { ...def, ...p };
+  } catch {}
+  return def;
+}
+function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch {} }
+
+/* ════════════════════════ 화면: 보드 ════════════════════════ */
+function gridPos(i) {
+  if (i <= 8) return [9 - i, 9];          // 아래 줄: 출발(오른쪽 아래) → 경제위기(왼쪽 아래)
+  if (i <= 16) return [1, 17 - i];         // 왼쪽 줄: 섬유공장 → 정부지원(왼쪽 위)
+  if (i <= 24) return [i - 15, 1];         // 위 줄: 게임회사 → 세금(오른쪽 위)
+  return [9, i - 23];                      // 오른쪽 줄: 태양광발전 → 에너지그룹
+}
+const orient = id => (id % 8 === 0 ? 'corner' : (id < 8 || (id > 16 && id < 24)) ? 'v' : 'h');
+function cellInner(c) {
+  const o = orient(c.id);
+  if (c.type === 'prop') {
+    const label = o === 'v' ? c.short.split('|').map(esc).join('<br>') : esc(c.name);
+    return `<span class="band"></span><span class="nm">${label}</span><span class="pr">${c.price}만</span><span class="bon" hidden></span><span class="own" hidden></span>`;
+  }
+  if (c.type === 'news') return `<span class="bdg n">${svg('news')}</span><span class="lb">경제 뉴스</span>`;
+  if (c.type === 'strat') return `<span class="bdg s">${svg('brief')}</span><span class="lb">경영 전략</span>`;
+  if (c.type === 'start') return `<span class="ic">${svg('arrow', 'stroke-width="2.6"')}</span><span class="cn">출발</span><span class="cs">매출 +${START_PAY}만</span>`;
+  const ic = c.type === 'gov' ? 'bank' : (c.id === 8 || c.id === 20) ? 'down' : 'receipt';
+  const amt = (c.amount > 0 ? '+' : '−') + Math.abs(c.amount) + '만';
+  if (o === 'corner') return `<span class="ic">${svg(ic)}</span><span class="cn">${c.name}</span><span class="cs">${c.type === 'gov' ? '지원금' : '현금'} ${amt}</span>`;
+  return `<span class="ic">${svg(ic)}</span><span class="lb">${c.name}</span><span class="am">${amt}</span>`;
+}
+function cellClass(c) {
+  const o = orient(c.id), cls = ['cell', o, c.type];
+  if (c.type === 'tax' || c.type === 'crisis') cls.push('red', o === 'corner' ? '' : 'ev');
+  if (c.type === 'gov') cls.push('green', o === 'corner' ? '' : 'ev');
+  return cls.filter(Boolean).join(' ');
+}
+const cellEls = [];
+function buildBoard() {
+  const b = $('#board');
+  b.innerHTML = '';
+  for (const c of CELLS) {
+    const [col, row] = gridPos(c.id);
+    const e = document.createElement('button');
+    e.type = 'button'; e.className = cellClass(c); e.dataset.id = c.id;
+    e.style.gridColumn = col; e.style.gridRow = row;
+    if (c.type === 'prop') { const g = GROUPS[c.group]; e.style.setProperty('--gc', g.c); e.style.setProperty('--gb', g.b); }
+    e.innerHTML = cellInner(c);
+    b.appendChild(e); cellEls[c.id] = e;
+  }
+  b.insertAdjacentHTML('beforeend', `
+    <div class="center">
+      <div class="c-head"><div class="c-title">기업가의 길</div><span class="bar4" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <div class="c-rule">최종 자산 = 현금 + 기업 가치</div></div>
+      <div class="c-mid">
+        <div class="mini-deck n" aria-hidden="true"><b>N</b><em>경제 뉴스</em></div>
+        <button class="dice" id="dice" type="button" aria-label="주사위 굴리기"><span class="die" id="d1" data-v="5">${'<i></i>'.repeat(9)}</span><span class="die" id="d2" data-v="2">${'<i></i>'.repeat(9)}</span></button>
+        <div class="mini-deck s" aria-hidden="true"><b>S</b><em>경영 전략</em></div>
+      </div>
+      <div class="c-turn" id="turnLine"></div>
+      <div class="c-msg" id="msg" role="status" aria-live="polite"></div>
+    </div>`);
+  b.addEventListener('click', e => {
+    const cell = e.target.closest('.cell'); if (cell) openCellInfo(+cell.dataset.id);
+  });
+  $('#dice').addEventListener('click', () => { if ($('#btnAct').dataset.mode === 'roll') doRoll(); });
+}
+function cellLabel(c) {
+  if (c.type !== 'prop') return c.name;
+  const pr = S && S.props[c.id];
+  const owner = pr && pr.owner >= 0 ? `${S.players[pr.owner].name} 소유` : '주인 없음';
+  return `${c.name}, 땅값 ${c.price}만, 통행료 ${c.toll}만, ${owner}`;
+}
+function renderCells() {
+  for (const c of CELLS) {
+    const e = cellEls[c.id]; if (!e) continue;
+    e.setAttribute('aria-label', cellLabel(c));
+    if (c.type !== 'prop') continue;
+    const pr = S.props[c.id], own = e.querySelector('.own'), bon = e.querySelector('.bon');
+    if (pr.owner >= 0) { e.classList.add('owned'); e.style.setProperty('--oc', S.players[pr.owner].color); own.hidden = false; own.textContent = pr.owner + 1; }
+    else { e.classList.remove('owned'); own.hidden = true; }
+    e.classList.toggle('strike', !!pr.strike);
+    const tags = (pr.bonus ? `+${pr.bonus}` : '') + (pr.tech ? '★' : '');
+    bon.hidden = !tags; bon.textContent = tags;
+  }
+}
+/* 말 위치: 칸 이름을 가리지 않도록 아랫부분(가격 줄)·모서리 칸은 아이콘 양옆에 놓고,
+   같은 칸에 여러 명이면 겹치지 않게 펼침 (값은 칸 크기 대비 비율) */
+const SPOTS = {
+  v: n => [[[.5, .76]], [[.27, .76], [.73, .76]], [[.27, .7], [.73, .7], [.5, .86]], [[.27, .68], [.73, .68], [.27, .86], [.73, .86]]][n - 1],
+  vs: n => [[[.5, .89]], [[.27, .89], [.73, .89]], [[.2, .89], [.5, .89], [.8, .89]], [[.24, .86], [.76, .86], [.24, .12], [.76, .12]]][n - 1],
+  h: n => [[[.5, .74]], [[.32, .74], [.68, .74]], [[.22, .72], [.5, .72], [.78, .72]], [[.2, .72], [.4, .72], [.6, .72], [.8, .72]]][n - 1],
+  hs: n => [[[.13, .5]], [[.13, .5], [.87, .5]], [[.13, .3], [.87, .3], [.13, .72]], [[.13, .3], [.87, .3], [.13, .72], [.87, .72]]][n - 1],
+  corner: n => [[[.18, .27]], [[.18, .27], [.82, .27]], [[.18, .2], [.82, .2], [.18, .44]], [[.18, .2], [.82, .2], [.18, .44], [.82, .44]]][n - 1],
+};
+const spotKind = id => { const o = orient(id); return o === 'corner' ? o : CELLS[id].type === 'prop' ? o : o + 's'; };
+function pawnXY(p) {
+  const wrap = $('#boardWrap').getBoundingClientRect();
+  const r = cellEls[p.pos].getBoundingClientRect();
+  const here = S.players.filter(q => !q.out && q.pos === p.pos);
+  const idx = Math.max(0, here.indexOf(p));
+  const spots = SPOTS[spotKind(p.pos)](Math.min(4, Math.max(1, here.length)));
+  const [fx, fy] = spots[idx % spots.length];
+  return [r.left - wrap.left + fx * r.width, r.top - wrap.top + fy * r.height];
+}
+function renderPawns(hopId = -1) {
+  const box = $('#pawns');
+  if (box.children.length !== S.players.length) {
+    box.innerHTML = S.players.map(p => `<div class="pawn" data-pid="${p.id}" style="--pc:${p.color}"><span>${p.id + 1}</span></div>`).join('');
+  }
+  for (const p of S.players) {
+    const e = box.children[p.id];
+    const [x, y] = pawnXY(p);
+    e.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
+    e.classList.toggle('gone', p.out);
+    e.classList.toggle('cur', S.phase === 'play' && p.id === S.turn && !S.preview);
+    if (p.id === hopId && !RM) { e.classList.remove('hop'); void e.offsetWidth; e.classList.add('hop'); }
+  }
+}
+function renderPlayers() {
+  const box = $('#players'), n = S.players.length, cols = n <= 3 ? n : 2;
+  box.style.setProperty('--cols', cols); box.classList.toggle('c3', cols === 3);
+  // 보드 아래 남는 공간(헤더+플레이어 줄+버튼)을 빼고 보드 크기를 정함
+  $('#app').style.setProperty('--reserve', (n <= 3 ? 250 : 322) + 'px');
+  box.innerHTML = S.players.map(p => {
+    const n = ownedBy(p).length;  // 보유 기업 수
+    const cur = S.phase === 'play' && p.id === S.turn && !S.preview;
+    return `<button type="button" class="pl${cur ? ' active' : ''}${p.out ? ' out' : ''}" data-pid="${p.id}" style="--pc:${p.color}"
+      aria-label="${esc(p.name)}, 현금 ${fmt(p.cash)}, 총자산 ${fmt(assetsOf(p))}">
+      <span class="dot">${p.id + 1}</span><span class="pn">${esc(p.name)}</span><span class="kind">${p.out ? '파산' : p.ai ? '컴퓨터' : '사람'}</span>
+      <span class="cash">${fmt(p.cash)}</span>
+      <span class="meta">${p.out ? '<span>파산해서 빠졌어요</span>' : `<span>총 ${fmt(assetsOf(p))}</span><span>기업 ${n}</span>${p.ins ? `<span>${svg('shield')}보험</span>` : ''}`}</span>
+    </button>`;
+  }).join('');
+}
+function renderChips() {
+  if (!S || S.preview) { $('#chips').innerHTML = ''; return; }
+  const L = Math.min(leaderLaps(), S.settings.laps - 1);
+  const yr = Math.floor(L / 4) + 1, q = (L % 4) + 1;
+  let h = `<span class="chip">${yr}년차 ${q}분기 · ${S.round}R</span>`;
+  if (S.finalRound && S.phase === 'play') h += `<span class="chip final">마지막 라운드</span>`;
+  if (S.econ) h += S.econ.kind === 'boom' ? `<span class="chip boom" title="통행료 2배">호황 ×2 · ${S.econ.left}R</span>` : `<span class="chip slump" title="통행료 절반">침체 ×½ · ${S.econ.left}R</span>`;
+  if (S.infl) h += `<span class="chip infl" title="구입 가격 +20%">물가 +20% · ${S.infl.left}R</span>`;
+  $('#chips').innerHTML = h;
+}
+function renderTurnLine() {
+  const tl = $('#turnLine');
+  if (!S || S.preview) { tl.innerHTML = ''; return; }
+  if (S.phase === 'over') { const w = ranking()[0].p; tl.innerHTML = `<span class="tdot" style="--pc:${w.color}"></span>${esc(j(w.name, '이/가'))} 이겼어요`; return; }
+  const p = S.players[S.turn];
+  tl.innerHTML = `<span class="tdot" style="--pc:${p.color}"></span>${esc(p.name)} 차례`;
+}
+function setMsg(t) { $('#msg').textContent = t; renderFeed(); }
+function renderFeed() {
+  const f = $('#feed'); if (!f) return;
+  const items = S && !S.preview ? S.log.slice(-7).reverse() : [];
+  f.innerHTML = items.length ? `<h2>최근 기록</h2>${items.map(t => `<p>${esc(t)}</p>`).join('')}` : '';
+}
+function setAction(mode, label) { const b = $('#btnAct'); b.dataset.mode = mode; b.textContent = label; b.disabled = mode === 'wait'; $('#dice').classList.toggle('ready', mode === 'roll'); }
+function renderAll() { renderCells(); renderPlayers(); renderChips(); renderTurnLine(); renderPawns(); renderFeed(); }
+function addFloat(pid, delta) {
+  const card = $(`.pl[data-pid="${pid}"]`); if (!card) return;
+  const f = document.createElement('span');
+  f.className = `float ${delta > 0 ? 'p' : 'm'}`; f.textContent = (delta > 0 ? '+' : '−') + fmt(Math.abs(delta));
+  card.appendChild(f); setTimeout(() => f.remove(), 1500);
+}
+
+/* ════════════════════════ 화면: 엔진 연결(io) ════════════════════════ */
+const uiIO = {
+  refresh() { renderCells(); renderPlayers(); renderChips(); renderTurnLine(); renderPawns(); renderFeed(); },
+  notify(t) { setMsg(t); },
+  money(p, d) { renderPlayers(); addFloat(p.id, d); },
+  flash(id) { const e = cellEls[id]; if (!e) return; e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash'); },
+  turnStart(p) {
+    this.refresh();
+    setMsg(p.ai ? `${j(p.name, '이/가')} 주사위를 굴려요` : `${p.name} 차례예요. 주사위를 굴리세요`);
+    setAction('wait', p.ai ? `${p.name} 차례…` : '주사위 굴리기');
+  },
+  waitRoll(p) {
+    setAction('roll', active().filter(q => !q.ai).length > 1 ? `${p.name} · 주사위 굴리기` : '주사위 굴리기');
+    return track(res => { G.rollResolve = res; });
+  },
+  async dice(a, b) {
+    setAction('wait', '굴리는 중…');
+    Snd.dice();
+    const d = $('#dice'), e1 = $('#d1'), e2 = $('#d2');
+    if (!RM) {
+      d.classList.add('rolling');
+      const end = Date.now() + T('dice');
+      while (Date.now() < end) { e1.dataset.v = 1 + Math.floor(Math.random() * 6); e2.dataset.v = 1 + Math.floor(Math.random() * 6); await sleep(70); }
+      d.classList.remove('rolling');
+    }
+    e1.dataset.v = a; e2.dataset.v = b;
+    setMsg(`${a} + ${b} = ${a + b}칸`);
+    await sleep(Math.round(T('dice') * 0.45));
+    setAction('wait', '이동 중…');
+  },
+  async step(p) { renderPawns(p.id); Snd.step(); await sleep(T('step')); },
+  askBuy(p, c, price) { return askBuyUI(p, c, price); },
+  showCard(p, card, ctx, choice, info) { return showCardUI(p, card, ctx, choice, info); },
+  async results() { setAction('result', '결과 보기'); renderAll(); openResults(); },
+};
+const headlessIO = {
+  refresh() {}, notify() {}, money() {}, flash() {}, turnStart() {}, step: async () => {}, dice: async () => {},
+  waitRoll: async () => {}, askBuy: async () => false, showCard: async () => null, results: async () => {},
+};
+let io = uiIO;
+
+function doRoll() {
+  Snd.init();
+  const r = G.rollResolve; G.rollResolve = null;
+  if (r) { setAction('wait', '굴리는 중…'); r(); }
+}
+
+/* ════════════════════════ 시트 ════════════════════════ */
+function openSheet(html, { dismiss = true, label = '안내' } = {}) {
+  const sh = $('#sheet'), sc = $('#scrim');
+  sh.innerHTML = `<div class="grip" aria-hidden="true"></div>${html}`;
+  sh.setAttribute('aria-label', label);
+  G.sheetTok++;                       // 닫히는 중이던 시트의 '숨김 예약'을 무효화
+  sh.hidden = false; sc.hidden = false; sh.scrollTop = 0;
+  void sh.offsetWidth;                 // 리플로 후 클래스 추가 → 슬라이드 애니메이션 유지
+  sh.classList.add('open'); sc.classList.add('open');
+  sc.onclick = dismiss ? () => closeSheet() : null;
+  setTimeout(() => { const f = sh.querySelector('[data-focus]') || sh.querySelector('button'); if (f) f.focus({ preventScroll: true }); }, 60);
+}
+function closeSheet() {
+  const sh = $('#sheet'), sc = $('#scrim');
+  sh.classList.remove('open'); sc.classList.remove('open');
+  const tok = ++G.sheetTok;
+  setTimeout(() => { if (G.sheetTok === tok) { sh.hidden = true; sc.hidden = true; } }, 260);
+  sh.onclick = null; sc.onclick = null;
+}
+function deedHTML(c, price) {
+  const g = GROUPS[c.group], pr = S.props[c.id];
+  const owner = pr.owner >= 0 ? S.players[pr.owner] : null;
+  const toll = tollOf(c.id), base = c.toll + pr.bonus;
+  const tollNote = pr.strike ? ' (파업 중)' : S.econ ? (S.econ.kind === 'boom' ? ' (호황 ×2)' : ' (침체 ×½)') : '';
+  const p = price != null ? price : buyPrice(c.id);
+  return `<div class="deed" style="--gc:${g.c};--gb:${g.b};--gi:${g.i}">
+    <div class="deed-h"><b>${esc(c.name)}</b><small>${g.name}</small></div>
+    <div class="deed-b">
+      <div class="kv"><span>땅값(기업 가치)</span><b>${fmt(c.price)}</b></div>
+      ${owner ? '' : `<div class="kv"><span>지금 사는 가격</span><b class="${p > c.price ? 'neg' : ''}">${fmt(p)}${p > c.price ? ' (물가 +20%)' : ''}</b></div>`}
+      <div class="kv"><span>통행료</span><b>${fmt(toll)}${toll !== base ? ` <small>기본 ${fmt(base)}</small>` : ''}${tollNote}</b></div>
+      ${pr.bonus ? `<div class="kv"><span>통행료 보너스</span><b class="pos">+${fmt(pr.bonus)}</b></div>` : ''}
+      ${pr.tech ? `<div class="kv"><span>기술 개발</span><b class="pos">게임 끝 +${fmt(pr.tech)}</b></div>` : ''}
+      <div class="kv"><span>주인</span><b>${owner ? esc(owner.name) : '없음'}</b></div>
+    </div></div>`;
+}
+function askBuyUI(p, c, price) {
+  return track(res => {
+    const can = p.cash >= price;
+    openSheet(`
+      <h2 class="sh-title">${esc(p.name)} · ${esc(c.name)}에 도착</h2>
+      <p class="sh-sub">주인 없는 기업이에요. 사 두면 다른 사람이 들를 때마다 통행료를 받아요.</p>
+      ${deedHTML(c, price)}
+      <p class="sh-note">${can ? `사면 현금이 ${fmt(p.cash)}에서 <b>${fmt(p.cash - price)}</b>이 돼요.` : `현금이 ${fmt(price - p.cash)} 모자라서 살 수 없어요.`}</p>
+      <div class="sh-actions">
+        <button class="btn ghost" type="button" data-a="skip">${can ? '사지 않기' : '확인'}</button>
+        ${can ? `<button class="btn primary" type="button" data-a="buy" data-focus>${fmt(price)}에 사기</button>` : ''}
+      </div>`, { dismiss: false, label: '기업 구입' });
+    $('#sheet').onclick = e => {
+      const a = e.target.closest('[data-a]'); if (!a) return;
+      Snd.init(); closeSheet(); res(a.dataset.a === 'buy');
+    };
+  });
+}
+function cardFace(card, small = false) {
+  return `<div class="gcard ${card.deck === 'N' ? 'n' : 's'}${small ? ' small' : ''}">
+    <div class="gc-h"><span>${card.deck === 'N' ? '경제 뉴스' : '경영 전략'}</span><span>${card.id}</span></div>
+    <div class="gc-b">
+      <div class="gc-t">${svg(card.icon)}<span>${card.title}</span></div>
+      ${card.tag ? `<div class="gc-tag">${card.tag}</div>` : ''}${card.extra ? '<span class="gc-x">추가 카드</span>' : ''}
+      <p class="gc-p">${card.text}</p>
+      <dl class="gc-r">${card.rows.map(([k, v, t]) => `<div><dt>${k}</dt><dd class="${t || ''}">${v}</dd></div>`).join('')}</dl>
+    </div></div>`;
+}
+const optHTML = (id, sub) => { const c = CELLS[id], g = GROUPS[c.group];
+  return `<button type="button" class="opt" data-id="${id}" style="--gc:${g.c}"><i></i><span>${esc(c.name)}</span><small>${sub}</small></button>`; };
+/* 카드 표시: info=true면 정보만 보여주고(컴퓨터는 자동으로 넘어감), 아니면 사람이 기업을 고름 */
+function showCardUI(p, card, ctx, choice, info) {
+  return track(res => {
+    const L = $('#cardLayer');
+    let panel = '';
+    if (!info) {
+      const sub = id => {
+        const c = CELLS[id];
+        if (card.pick === 'rival') return `${esc(S.players[S.props[id].owner].name)} · ${fmt(Math.round(c.price * 1.5))}`;
+        if (card.pick === 'free') return `땅값 ${fmt(c.price)}`;
+        return `통행료 ${fmt(tollOf(id))}`;
+      };
+      const head = card.pick === 'rival' ? '인수할 기업을 골라요' : card.pick === 'free' ? '살 기업을 골라요' : '효과를 줄 내 기업을 골라요';
+      panel = `<div class="panel"><div class="pick-h">${head}</div><div class="opts">${ctx.options.map(id => optHTML(id, sub(id))).join('')}</div>
+        ${card.optional ? '<button class="btn ghost" type="button" data-skip>사용하지 않기</button>' : ''}</div>`;
+    } else {
+      let line = ctx.note || '';
+      if (choice != null) {
+        const nm = CELLS[choice].name;
+        line = card.fx === 'strike' ? `파업하는 기업: <b>${esc(nm)}</b>` : `${esc(j(p.name, '이/가'))} 고른 기업: <b>${esc(nm)}</b>`;
+      } else if (p.ai && card.optional && !ctx.note) line = `${esc(j(p.name, '은/는'))} 이번엔 쓰지 않기로 했어요.`;
+      panel = (line ? `<div class="panel"><p>${line}</p></div>` : '') +
+        (p.ai ? '<div class="skip-hint">화면을 누르면 넘어가요</div>' : '<button class="btn primary big" type="button" data-ok style="width:min(300px,82vw)" data-focus>확인</button>');
+    }
+    L.innerHTML = `<div class="who" style="--pc:${p.color}"><i></i>${esc(p.name)} · ${card.deck === 'N' ? '경제 뉴스 칸' : '경영 전략 칸'}</div>${cardFace(card)}${panel}`;
+    L.hidden = false;
+    setTimeout(() => { const f = L.querySelector('[data-focus]') || L.querySelector('.opt'); if (f) f.focus({ preventScroll: true }); }, 80);
+    let done = false;
+    const finish = v => { if (done) return; done = true; L.hidden = true; L.innerHTML = ''; L.onclick = null; res(v); };
+    L.onclick = e => {
+      const o = e.target.closest('.opt');
+      if (o) { finish(+o.dataset.id); return; }
+      if (e.target.closest('[data-skip]')) { finish(null); return; }
+      if (e.target.closest('[data-ok]') || (info && p.ai)) finish(choice);
+    };
+    if (info && p.ai) setTimeout(() => finish(choice), T('card'));
+  });
+}
+function openCellInfo(id) {
+  if (!S) return;
+  const c = CELLS[id];
+  let body;
+  if (c.type === 'prop') body = deedHTML(c);
+  else {
+    const desc = {
+      start: `지나가거나 도착할 때마다 매출 ${START_PAY}만을 받아요. 한 번 지나갈 때마다 1바퀴(1분기)예요.`,
+      news: '경제 뉴스(N) 카드를 뽑아요. 외부 환경 변화라 모든 플레이어에게 적용돼요.',
+      strat: '경영 전략(S) 카드를 뽑아요. 뽑은 사람에게만 적용돼요.',
+      crisis: `현금 ${-c.amount}만을 잃어요. 보험 가입 카드가 있으면 한 번 막아 줘요.`,
+      tax: `현금 ${-c.amount}만을 내요.`,
+      gov: `${c.amount}만을 받아요.`,
+    }[c.type];
+    body = `<p class="sh-sub" style="font-size:15px;color:var(--ink)">${desc}</p>`;
+  }
+  openSheet(`${c.type === 'prop' ? '' : `<h2 class="sh-title">${esc(c.name)}</h2>`}${body}<div class="sh-actions"><button class="btn ghost" type="button" data-close data-focus>닫기</button></div>`, { label: c.name });
+  $('#sheet').onclick = e => { if (e.target.closest('[data-close]')) closeSheet(); };
+}
+function openPlayerInfo(pid) {
+  if (!S) return;
+  const p = S.players[pid], mine = ownedBy(p);
+  openSheet(`
+    <h2 class="sh-title"><span style="color:${p.color}">●</span> ${esc(p.name)}</h2>
+    <p class="sh-sub">${p.out ? '파산했어요' : p.ai ? '컴퓨터' : '사람'} · ${p.laps}바퀴${p.ins ? ' · 보험 1회' : ''}</p>
+    <div class="deed" style="--gc:var(--navy);--gb:var(--soft);--gi:#fff"><div class="deed-b">
+      <div class="kv"><span>현금</span><b>${fmt(p.cash)}</b></div>
+      <div class="kv"><span>기업 가치</span><b>${fmt(compValue(p))}</b></div>
+      ${techValue(p) ? `<div class="kv"><span>기술 개발 보너스</span><b class="pos">+${fmt(techValue(p))}</b></div>` : ''}
+      <div class="kv"><span>총자산</span><b>${fmt(assetsOf(p))}</b></div></div></div>
+    <div class="sec"><h3>가진 기업 ${mine.length}개</h3>
+      ${mine.length ? `<div class="owned-list">${mine.map(id => optHTML(id, `통행료 ${fmt(tollOf(id))}`)).join('')}</div>` : '<div class="empty">아직 가진 기업이 없어요.</div>'}</div>
+    <div class="sh-actions"><button class="btn ghost" type="button" data-close data-focus>닫기</button></div>`, { label: p.name });
+  $('#sheet').onclick = e => {
+    const o = e.target.closest('.opt'); if (o) { openCellInfo(+o.dataset.id); return; }
+    if (e.target.closest('[data-close]')) closeSheet();
+  };
+}
+
+/* ── 새 게임 설정 ── */
+function openSetup(resumable) {
+  const d = { players: prefs.players.map(p => ({ ...p })), startCash: prefs.startCash, laps: prefs.laps, extra: prefs.extra };
+  const seg = (key, opts) => `<div class="seg full" role="group">${opts.map(([v, t]) =>
+    `<button type="button" data-set="${key}" data-v="${v}" aria-pressed="${d[key] === v}">${t}</button>`).join('')}</div>`;
+  const render = () => {
+    openSheet(`
+      <h2 class="sh-title">새 게임</h2>
+      <p class="sh-sub">한 폰으로 돌려 가며 하거나 컴퓨터와 겨뤄요. 정해진 바퀴가 끝났을 때 현금 + 기업 가치가 가장 큰 사람이 이겨요.</p>
+      ${resumable ? `<button class="btn navy" type="button" data-resume style="width:100%;margin-bottom:6px">이어하기 · ${resumable.round}라운드 (${esc(resumable.players.map(p => p.name).join(', '))})</button>` : ''}
+      <div class="sec"><h3>플레이어 (2~4명)</h3>
+        ${d.players.map((p, i) => `<div class="prow" style="--pc:${PAWN_COLORS[i]}">
+          <span class="dot">${i + 1}</span>
+          <input id="pname${i}" type="text" maxlength="10" value="${esc(p.name)}" aria-label="플레이어 ${i + 1} 이름" autocomplete="off">
+          <div class="seg" role="group" aria-label="플레이어 ${i + 1} 종류">
+            <button type="button" data-kind="${i}" data-ai="0" aria-pressed="${!p.ai}">사람</button>
+            <button type="button" data-kind="${i}" data-ai="1" aria-pressed="${p.ai}">컴퓨터</button></div>
+          <button class="x-btn" type="button" data-del="${i}" aria-label="플레이어 ${i + 1} 빼기" ${d.players.length <= 2 ? 'disabled' : ''}>${svg('close')}</button>
+        </div>`).join('')}
+        ${d.players.length < 4 ? '<button class="add-btn" type="button" data-add>+ 플레이어 추가</button>' : ''}
+      </div>
+      <div class="sec"><h3>시작 자금</h3>${seg('startCash', [[800, '800만'], [1000, '1,000만'], [1500, '1,500만']])}</div>
+      <div class="sec"><h3>게임 길이 (출발 1번 = 1분기)</h3>${seg('laps', [[4, '1년 · 4바퀴'], [8, '2년 · 8바퀴'], [12, '3년 · 12바퀴']])}</div>
+      <div class="sec"><button class="switch" type="button" data-extra aria-pressed="${d.extra}">
+        <span>추가 카드 10장 같이 쓰기<small>실물 카드 9장에 폰 버전 새 카드를 더해요</small></span><i class="knob" aria-hidden="true"></i></button></div>
+      <div class="sh-actions"><button class="btn primary big" type="button" data-start data-focus>게임 시작</button></div>`,
+      { dismiss: !!(S && !S.preview && S.phase === 'play'), label: '새 게임 설정' });
+    const sh = $('#sheet');
+    sh.querySelectorAll('input[id^="pname"]').forEach((inp, i) => inp.addEventListener('input', () => { d.players[i].name = inp.value; }));
+    sh.onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.kind != null) { d.players[+b.dataset.kind].ai = b.dataset.ai === '1'; render(); }
+      else if (b.dataset.del != null) { d.players.splice(+b.dataset.del, 1); render(); }
+      else if (b.hasAttribute('data-add')) { d.players.push({ name: `컴퓨터 ${d.players.length}`, ai: true }); render(); }
+      else if (b.dataset.set) { d[b.dataset.set] = +b.dataset.v; render(); }
+      else if (b.hasAttribute('data-extra')) { d.extra = !d.extra; render(); }
+      else if (b.hasAttribute('data-resume')) { Snd.init(); closeSheet(); startFrom(resumable); }
+      else if (b.hasAttribute('data-start')) {
+        Snd.init();
+        d.players.forEach((p, i) => { p.name = (p.name || '').trim() || (p.ai ? `컴퓨터 ${i}` : `플레이어 ${i + 1}`); });
+        prefs = { ...prefs, players: d.players, startCash: d.startCash, laps: d.laps, extra: d.extra }; savePrefs();
+        closeSheet(); newGame(d);
+      }
+    };
+  };
+  render();
+}
+function openMenu() {
+  const playing = S && !S.preview && S.phase === 'play';
+  openSheet(`
+    <h2 class="sh-title">메뉴</h2>
+    <div class="menu-list" style="margin-top:10px">
+      <button class="btn ghost" type="button" data-m="rules" data-focus>${svg('book')} 규칙과 카드 보기</button>
+      ${S && !S.preview ? `<button class="btn ghost" type="button" data-m="log">${svg('list')} 최근 기록</button>` : ''}
+      <button class="btn ghost" type="button" data-m="sound">${svg(prefs.sound !== false ? 'sound' : 'mute')} 소리 ${prefs.sound !== false ? '끄기' : '켜기'}</button>
+      <button class="btn ghost" type="button" data-m="fast">${svg('bolt')} 컴퓨터 속도: ${G.fast ? '빠르게' : '보통'}</button>
+      <button class="btn ${playing ? 'danger' : 'navy'}" type="button" data-m="new">${svg('restart')} ${playing ? '이 게임 그만두고 새 게임' : '새 게임'}</button>
+    </div>`, { label: '메뉴' });
+  $('#sheet').onclick = e => {
+    const b = e.target.closest('[data-m]'); if (!b) return;
+    const m = b.dataset.m;
+    if (m === 'rules') openRules();
+    else if (m === 'log') openLog();
+    else if (m === 'sound') { prefs.sound = prefs.sound === false; savePrefs(); if (prefs.sound) Snd.init(); openMenu(); }
+    else if (m === 'fast') { G.fast = !G.fast; prefs.fast = G.fast; savePrefs(); openMenu(); }
+    else if (m === 'new') {
+      if (playing) {
+        openSheet(`<h2 class="sh-title">지금 게임을 그만둘까요?</h2><p class="sh-sub">진행 중인 게임은 사라지고 새 게임 설정으로 넘어가요.</p>
+          <div class="sh-actions"><button class="btn ghost" type="button" data-c="no" data-focus>계속하기</button><button class="btn danger" type="button" data-c="yes">그만두기</button></div>`, { label: '확인' });
+        $('#sheet').onclick = ev => { const c = ev.target.closest('[data-c]'); if (!c) return; if (c.dataset.c === 'yes') { stopGame(); openSetup(null); } else closeSheet(); };
+      } else openSetup(null);
+    }
+  };
+}
+function openRules() {
+  const decks = d => CARDS.filter(c => c.deck === d).map(c => cardFace(c, true)).join('');
+  openSheet(`
+    <h2 class="sh-title">규칙</h2>
+    <div class="rules">
+      <h4>목표</h4><p>정해진 바퀴(1년 = 4바퀴)가 끝났을 때 <b>현금 + 기업 가치</b>가 가장 큰 사람이 이겨요. 누군가 목표 바퀴를 채우면 그 라운드까지만 하고 끝나서, 모두 같은 횟수만큼 차례를 가져요.</p>
+      <h4>차례</h4><ul><li>주사위 2개를 굴려 나온 수만큼 이동해요.</li><li>출발을 지나거나 도착하면 매출 ${START_PAY}만을 받아요.</li></ul>
+      <h4>기업 칸</h4><ul><li>주인이 없으면 땅값을 내고 살 수 있어요.</li><li>남의 기업에 도착하면 통행료(땅값의 15%)를 내요.</li><li>테두리 색과 번호가 주인을 뜻해요.</li></ul>
+      <h4>특수 칸</h4><ul><li>경제위기 −300만 · 금융위기 −150만 · 세금 −150만 · 법인세 −80만</li><li>정부지원 +150만 · 창업지원 +80만</li></ul>
+      <h4>카드</h4><ul><li>경제 뉴스(N)는 모두에게, 경영 전략(S)은 뽑은 사람에게 적용돼요.</li><li>'한 바퀴' 효과는 ${LAP_ROUNDS}라운드 동안 이어져요.</li></ul>
+      <h4>돈이 모자라면</h4><p>가진 기업을 싼 것부터 은행에 땅값의 절반에 팔아요. 그래도 모자라면 파산해서 게임에서 빠져요.</p>
+      <h4>경제 뉴스 카드</h4><div class="card-grid">${decks('N')}</div>
+      <h4>경영 전략 카드</h4><div class="card-grid">${decks('S')}</div>
+    </div>
+    <div class="sh-actions"><button class="btn ghost" type="button" data-close data-focus>닫기</button></div>`, { label: '규칙' });
+  $('#sheet').onclick = e => { if (e.target.closest('[data-close]')) closeSheet(); };
+}
+function openLog() {
+  const items = S.log.slice().reverse().map(t => `<li>${esc(t)}</li>`).join('');
+  openSheet(`<h2 class="sh-title">최근 기록</h2>${items ? `<ul class="log">${items}</ul>` : '<div class="empty">아직 기록이 없어요.</div>'}
+    <div class="sh-actions"><button class="btn ghost" type="button" data-close data-focus>닫기</button></div>`, { label: '기록' });
+  $('#sheet').onclick = e => { if (e.target.closest('[data-close]')) closeSheet(); };
+}
+function openResults() {
+  const r = ranking(), w = r[0].p;
+  const byLaps = active().length > 1;
+  openSheet(`
+    <h2 class="sh-title">${esc(j(w.name, '이/가'))} 이겼어요</h2>
+    <p class="sh-sub">${byLaps ? `${S.settings.laps / 4}년(${S.settings.laps}바퀴)이 끝났어요 · ${S.round}라운드` : '나머지 플레이어가 모두 파산했어요'}. 최종 자산 = 현금 + 기업 가치</p>
+    <div class="rank">${r.map((x, i) => `<div class="rk${i === 0 ? ' win' : ''}" style="--pc:${x.p.color}">
+      <span class="no">${i + 1}</span><span class="dot">${x.p.id + 1}</span>
+      <span class="who2"><b>${esc(x.p.name)}</b><small>${x.p.out ? '파산' : `현금 ${fmt(x.cash)} + 기업 ${fmt(x.comp)}${x.tech ? ` + 기술 ${fmt(x.tech)}` : ''}`}</small></span>
+      <span class="tot">${fmt(x.total)}</span></div>`).join('')}</div>
+    <div class="sh-actions"><button class="btn ghost" type="button" data-r="setup">설정 바꾸기</button><button class="btn primary" type="button" data-r="again" data-focus>한 판 더</button></div>`,
+    { label: '결과' });
+  $('#sheet').onclick = e => {
+    const b = e.target.closest('[data-r]'); if (!b) return;
+    if (b.dataset.r === 'again') { closeSheet(); newGame({ ...prefs }); }
+    else openSetup(null);
+  };
+}
+
+/* ════════════════════════ 시작/재개 ════════════════════════ */
+function previewState() {
+  const s = newState({ ...prefs }, 7);
+  s.preview = true; return s;
+}
+function stopGame() { G.gen++; abortAll(); G.rollResolve = null; $('#cardLayer').hidden = true; }
+function newGame(setup) {
+  const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+  startFrom(newState({ players: setup.players, startCash: setup.startCash, laps: setup.laps, extra: setup.extra }, seed));
+}
+function startFrom(state) {
+  stopGame();
+  S = state; delete S.preview;
+  const d = S.dice || [5, 2]; $('#d1').dataset.v = d[0]; $('#d2').dataset.v = d[1];
+  renderAll();
+  if (S.phase === 'over') { setAction('result', '결과 보기'); setMsg('게임이 끝났어요'); openResults(); return; }
+  setMsg(S.log.length ? S.log[S.log.length - 1] : '게임을 시작해요!');
+  run();
+}
+async function run() {
+  const gen = G.gen;
+  try { await gameLoop(); }
+  catch (e) {
+    if (e === ABORT || gen !== G.gen) return;
+    console.error(e);
+    setMsg('문제가 생겼어요. 메뉴에서 새 게임을 시작해 주세요.');
+  }
+}
+
+/* ════════════════════════ 이벤트 ════════════════════════ */
+function wire() {
+  $('#btnMenu').innerHTML = svg('menu');
+  $('#btnMenu').addEventListener('click', openMenu);
+  $('#btnAct').addEventListener('click', () => {
+    const m = $('#btnAct').dataset.mode;
+    if (m === 'roll') doRoll();
+    else if (m === 'setup') openSetup(loadPlayable());
+    else if (m === 'result') openResults();
+  });
+  $('#players').addEventListener('click', e => { const b = e.target.closest('.pl'); if (b) openPlayerInfo(+b.dataset.pid); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !$('#sheet').hidden && $('#scrim').onclick) closeSheet();
+  });
+  // 화면 크기가 바뀌면 말 위치 다시 계산
+  const ro = window.ResizeObserver ? new ResizeObserver(() => S && renderPawns()) : null;
+  if (ro) ro.observe($('#boardWrap')); else window.addEventListener('resize', () => S && renderPawns());
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => S && renderPawns()).catch(() => {});
+}
+function loadPlayable() { const s = loadSave(); return s && s.phase === 'play' ? s : null; }
+
+function boot(data) {
+  G.fast = !!prefs.fast;
+  buildBoard(); wire();
+  let hot = null;
+  try { hot = data && data.save ? JSON.parse(data.save) : null; } catch { hot = null; }
+  if (hot && validState(hot) && hot.phase === 'play') { startFrom(hot); return; }
+  // 첫 화면: 보드 미리보기 + 새 게임 설정 (저장된 게임이 있으면 이어하기)
+  S = previewState();
+  renderAll();
+  setMsg('새 게임을 설정하고 시작하세요');
+  setAction('setup', '게임 시작');
+  openSetup(loadPlayable());
+}
+
+// 개발용: 화면 없이 컴퓨터끼리 여러 판을 돌려 규칙 위반을 점검
+window.__ER = {
+  async sim(n = 100, seed = 1, opt = {}) {
+    const prev = { S, io, h: G.headless }; G.headless = true; io = headlessIO; G.audit = [];
+    const out = { games: 0, rounds: [], bankrupts: 0, earlyEnd: 0, errors: [], winnerCash: [], turnsPerPlayer: [] };
+    for (let g = 0; g < n; g++) {
+      const np = opt.players || 3;
+      S = newState({ players: Array.from({ length: np }, (_, i) => ({ name: `AI${i + 1}`, ai: true })),
+        startCash: opt.startCash || 1000, laps: opt.laps || 4, extra: opt.extra !== false }, seed + g);
+      try { await gameLoop(); } catch (e) { out.errors.push(String((e && e.stack) || e)); }
+      out.games++; out.rounds.push(S.round);
+      out.bankrupts += S.players.filter(p => p.out).length;
+      if (active().length <= 1) out.earlyEnd++;
+      out.winnerCash.push(ranking()[0].total);
+      out.turnsPerPlayer.push(S.turns / np);
+    }
+    out.audit = G.audit.slice(0, 20); out.auditCount = G.audit.length;
+    S = prev.S; io = prev.io; G.headless = prev.h;
+    return out;
+  },
+  state: () => S,
+  force(deck, id) { G.force = G.force || {}; G.force[deck] = id; },
+  roll(a, b) { (G.rollQueue = G.rollQueue || []).push([a, b]); },
+  patch(fn) { fn(S); if (io.refresh) io.refresh(); },
+};
+
+boot({});
+
+// 오프라인에서도 열리도록 서비스워커 등록 (https 또는 localhost에서만)
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+})();
+</script>
+
+</body>
+</html>
